@@ -22,61 +22,49 @@
   --surface: #151b23;
   --surface-2: #1c242f;
   --surface-3: #252f3d;
-  --surface-hover: #2d3849;
 
   --text: #f8fafc;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
 
   --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.15);
-
-  --radius: 14px;
-  --radius-sm: 10px;
-  --radius-lg: 20px;
+  --border-strong: rgba(255,255,255,0.16);
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-  --top-bar-h: 58px;
-  --bottom-nav-h: 68px;
+  --topbar-h: 56px;
+  --bottomnav-h: 64px;
 }
 
-/* ============ RESET ============ */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   margin: 0; padding: 0; height: 100%; overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--bg); color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.5;
 }
 button, input, select, textarea { font-family: inherit; font-size: inherit; }
 button { cursor: pointer; border: none; background: none; color: inherit; }
-a { color: var(--brand); }
 .hidden { display: none !important; }
 
 /* ============ LOGIN ============ */
 #login-screen {
-  position: fixed; inset: 0;
+  position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
-  background: radial-gradient(ellipse at top, #1c242f 0%, #0a0e14 60%);
-  z-index: 1000;
+  background: radial-gradient(ellipse at top, #1c242f 0%, #0a0e14 70%);
 }
 .login-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 32px 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 36px 26px;
   width: 100%; max-width: 400px;
-  display: flex; flex-direction: column; gap: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column; gap: 18px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
 }
 .login-logo {
-  width: 76px; height: 76px;
+  width: 76px; height: 76px; border-radius: 22px;
   background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-  border-radius: 22px;
   display: flex; align-items: center; justify-content: center;
   font-weight: 900; font-size: 30px; color: #000;
   margin: 0 auto 8px;
@@ -84,61 +72,47 @@ a { color: var(--brand); }
 }
 .login-card h1 {
   margin: 0; text-align: center;
-  font-size: 24px; font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 24px; font-weight: 800; letter-spacing: -0.02em;
 }
 .login-card .subtitle {
   text-align: center; color: var(--text-muted);
-  font-size: 13px; margin: 0 0 12px;
+  font-size: 13px; margin: 0 0 8px;
 }
 .login-card input {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 14px 16px;
-  border-radius: 12px;
-  font-size: 15px;
-  outline: none;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 14px 16px; border-radius: 12px;
+  font-size: 15px; outline: none; width: 100%;
   transition: border-color 0.15s, background 0.15s;
 }
 .login-card input:focus { border-color: var(--brand); background: var(--surface-3); }
 .btn-primary {
   background: var(--brand); color: #000;
   padding: 14px 20px; border-radius: 12px;
-  font-weight: 700; font-size: 15px;
-  transition: background 0.15s, transform 0.1s;
+  font-weight: 700; font-size: 15px; width: 100%;
+  transition: background 0.15s, transform 0.08s;
 }
 .btn-primary:hover { background: var(--brand-hover); }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-#login-error {
-  min-height: 18px; font-size: 13px;
-  color: var(--danger); text-align: center;
-}
-.login-hint {
-  font-size: 11px; color: var(--text-dim);
-  text-align: center; margin-top: 4px; line-height: 1.5;
-}
+#login-error { min-height: 18px; font-size: 13px; color: var(--danger); text-align: center; }
+.login-hint { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 4px; }
 
-/* ============ MAIN LAYOUT ============ */
+/* ============ MAIN ============ */
 #main-screen { position: fixed; inset: 0; }
 #map { position: absolute; inset: 0; z-index: 1; }
 
-/* Top bar */
+/* ---- Top Bar ---- */
 .top-bar {
   position: absolute;
   top: calc(10px + var(--safe-top));
   left: 10px; right: 10px;
-  height: var(--top-bar-h);
+  height: var(--topbar-h);
   z-index: 20;
   background: rgba(21,27,35,0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border); border-radius: 16px;
   display: flex; align-items: center;
-  padding: 0 8px 0 14px;
-  gap: 10px;
+  padding: 0 8px 0 12px; gap: 8px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
 .brand-badge {
@@ -146,80 +120,71 @@ a { color: var(--brand); }
   font-weight: 800; font-size: 14px; flex-shrink: 0;
 }
 .brand-badge .mark {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px; border-radius: 9px;
   background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  color: #000; font-size: 12px; font-weight: 900;
+  color: #000; font-size: 13px; font-weight: 900;
 }
+.brand-badge span { display: none; }
 .search-bar {
-  flex: 1; height: 40px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  display: flex; align-items: center;
-  padding: 0 12px;
-  gap: 8px;
+  flex: 1; height: 40px; min-width: 0;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; display: flex; align-items: center;
+  padding: 0 12px; gap: 8px;
   transition: border-color 0.15s;
-  min-width: 0;
 }
 .search-bar:focus-within { border-color: var(--brand); }
 .search-bar i { color: var(--text-dim); font-size: 14px; flex-shrink: 0; }
 .search-bar input {
-  flex: 1; min-width: 0;
-  background: transparent; border: none; outline: none;
-  color: var(--text); font-size: 14px;
+  flex: 1; min-width: 0; background: transparent;
+  border: none; outline: none; color: var(--text); font-size: 14px;
 }
 .search-bar input::placeholder { color: var(--text-dim); }
-
 .user-btn {
-  width: 40px; height: 40px;
-  border-radius: 12px;
+  width: 40px; height: 40px; border-radius: 12px;
   background: linear-gradient(135deg, var(--info), var(--purple));
-  color: #fff;
+  color: #fff; font-weight: 800; font-size: 15px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 15px;
-  flex-shrink: 0;
-  transition: transform 0.1s;
+  flex-shrink: 0; transition: transform 0.1s;
 }
-.user-btn:active { transform: scale(0.95); }
+.user-btn:active { transform: scale(0.94); }
 
-/* Mode indicator (shown during add mode) */
+/* ---- Mode indicator ---- */
 .mode-indicator {
   position: absolute;
-  top: calc(var(--top-bar-h) + 20px + var(--safe-top));
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(var(--topbar-h) + 22px + var(--safe-top));
+  left: 50%; transform: translateX(-50%);
   z-index: 25;
-  background: var(--info);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 30px;
+  background: var(--info); color: #fff;
+  padding: 10px 14px; border-radius: 30px;
   display: flex; align-items: center; gap: 10px;
   font-size: 13px; font-weight: 600;
   box-shadow: 0 8px 24px rgba(59,130,246,0.4);
-  max-width: 90vw;
-  white-space: nowrap;
+  max-width: 90vw; white-space: nowrap;
+  animation: slide-down 0.2s ease-out;
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
 .mode-indicator button {
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px;
+  font-size: 12px; flex-shrink: 0;
 }
 
-/* FAB stack */
+/* ---- FAB stack ---- */
 .fab-stack {
-  position: fixed;
+  position: absolute;
   right: 12px;
-  bottom: calc(var(--bottom-nav-h) + 16px + var(--safe-bottom));
+  bottom: calc(var(--bottomnav-h) + 16px + var(--safe-bottom));
   z-index: 18;
   display: flex; flex-direction: column; gap: 10px;
 }
 .fab {
-  width: 48px; height: 48px;
-  border-radius: 14px;
+  width: 50px; height: 50px;
+  border-radius: 15px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
@@ -230,167 +195,156 @@ a { color: var(--brand); }
 }
 .fab:active { transform: scale(0.9); }
 .fab.active { background: var(--brand); color: #000; border-color: var(--brand); }
+.fab.fab-add {
+  background: var(--brand); color: #000; border-color: var(--brand);
+  box-shadow: 0 6px 24px rgba(245,158,11,0.5);
+  font-size: 22px;
+}
 
-/* Bottom nav (mobile) */
+/* ---- Bottom nav ---- */
 .bottom-nav {
-  position: fixed;
+  position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: calc(var(--bottom-nav-h) + var(--safe-bottom));
+  height: calc(var(--bottomnav-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
   z-index: 20;
   background: rgba(21,27,35,0.98);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   align-items: center;
 }
 .nav-btn {
-  height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 3px;
-  color: var(--text-dim);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: color 0.12s;
-  position: relative;
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  color: var(--text-dim); font-size: 10px; font-weight: 600;
+  position: relative; transition: color 0.12s;
 }
 .nav-btn i { font-size: 18px; }
 .nav-btn.active { color: var(--brand); }
 .nav-btn.active::before {
   content: '';
-  position: absolute;
-  top: 4px; left: 50%; transform: translateX(-50%);
-  width: 32px; height: 3px;
-  background: var(--brand);
-  border-radius: 2px;
+  position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 3px; background: var(--brand); border-radius: 2px;
 }
-.nav-btn.add-btn {
-  color: #000;
-}
-.nav-btn.add-btn i {
-  width: 44px; height: 44px;
-  border-radius: 14px;
-  background: var(--brand);
+.nav-btn.nav-add i {
+  width: 42px; height: 42px; border-radius: 13px;
+  background: var(--brand); color: #000;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
-  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
-  color: #000;
+  box-shadow: 0 6px 20px rgba(245,158,11,0.5);
+  transition: transform 0.1s;
 }
-.nav-btn.add-btn i:active { transform: scale(0.92); }
+.nav-btn.nav-add:active i { transform: scale(0.9); }
+.nav-btn.nav-add span { color: var(--brand); }
 
-/* ============ SHEET (list / track / stats) ============ */
+/* ---- Sheet (drawer / sidebar) ---- */
 .sheet {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: calc(85vh - var(--safe-bottom));
+  height: calc(88vh - var(--safe-bottom));
   z-index: 22;
   background: var(--surface);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
   display: flex; flex-direction: column;
   transform: translateY(100%);
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sheet.open { transform: translateY(0); }
 .sheet-handle {
   width: 40px; height: 4px;
-  background: var(--border-strong);
-  border-radius: 2px;
-  margin: 10px auto 6px;
+  background: var(--border-strong); border-radius: 2px;
+  margin: 10px auto 6px; flex-shrink: 0;
+}
+.sheet-tabs {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px; padding: 4px 12px 10px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-tab {
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.sheet-tab i { font-size: 13px; }
+.sheet-tab.active {
+  background: var(--brand);
+  color: #000;
 }
 .sheet-body {
   flex: 1; overflow-y: auto;
-  padding: 0 16px 16px;
+  padding: 0 14px 20px;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Section headers */
+/* ---- Section headers ---- */
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
   margin: 16px 0 10px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-dim);
 }
 .section-header .count {
-  background: var(--surface-3);
-  color: var(--text);
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 11px;
+  background: var(--surface-3); color: var(--text);
+  padding: 2px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 700;
 }
 
-/* Filter chips */
+/* ---- Filter chips ---- */
 .filter-chips {
   display: flex; gap: 6px;
   overflow-x: auto;
-  padding: 0 0 12px;
+  padding: 12px 0 6px;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 .filter-chips::-webkit-scrollbar { display: none; }
 .chip {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text-muted);
-  padding: 7px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  padding: 7px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+  transition: all 0.12s;
 }
 .chip.active {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #000;
+  background: var(--brand); border-color: var(--brand); color: #000;
 }
 .chip .badge {
-  display: inline-block;
-  background: rgba(0,0,0,0.2);
-  padding: 1px 6px;
-  border-radius: 8px;
-  margin-left: 4px;
-  font-size: 10px;
+  display: inline-block; background: rgba(0,0,0,0.2);
+  padding: 1px 6px; border-radius: 8px;
+  margin-left: 4px; font-size: 10px;
 }
 .chip.active .badge { background: rgba(0,0,0,0.3); color: #000; }
 
-/* Item cards */
-.items-grid {
-  display: flex; flex-direction: column; gap: 8px;
-}
+/* ---- Item cards ---- */
+.items-grid { display: flex; flex-direction: column; gap: 8px; }
 .item-card {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 14px;
   padding: 12px;
-  display: flex; gap: 12px;
-  align-items: center;
+  display: flex; gap: 12px; align-items: center;
   transition: border-color 0.12s, background 0.12s, transform 0.1s;
   cursor: pointer;
 }
 .item-card:hover { border-color: var(--border-strong); background: var(--surface-3); }
 .item-card:active { transform: scale(0.99); }
-
 .item-thumb {
-  width: 44px; height: 44px;
-  border-radius: 11px;
+  width: 44px; height: 44px; border-radius: 11px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: var(--surface-3);
+  font-size: 18px; flex-shrink: 0;
+  overflow: hidden; background: var(--surface-3);
 }
 .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
 .item-main { flex: 1; min-width: 0; }
 .item-title {
   display: flex; align-items: center; gap: 6px;
@@ -398,282 +352,201 @@ a { color: var(--brand); }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .item-code {
-  background: var(--surface-3);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  flex-shrink: 0;
+  background: var(--surface-3); color: var(--text-muted);
+  padding: 1px 6px; border-radius: 4px;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
 }
 .item-sub {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 12px; color: var(--text-muted);
   margin-top: 3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.item-actions {
-  display: flex; gap: 2px; flex-shrink: 0;
-}
+.item-actions { display: flex; gap: 2px; flex-shrink: 0; }
 .icon-btn {
-  width: 32px; height: 32px;
-  border-radius: 8px;
+  width: 32px; height: 32px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--text-muted); font-size: 13px;
   transition: background 0.12s, color 0.12s;
 }
-.icon-btn:hover { background: var(--surface-hover); color: var(--text); }
+.icon-btn:hover { background: var(--surface-3); color: var(--text); }
 .icon-btn.danger:hover { color: var(--danger); }
 
-/* Empty state */
-.empty-state {
-  padding: 40px 20px;
-  text-align: center;
-}
-.empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+/* ---- Empty state ---- */
+.empty-state { padding: 40px 20px; text-align: center; }
+.empty-state .emoji { font-size: 44px; margin-bottom: 12px; opacity: 0.9; }
 .empty-state h3 {
-  font-size: 15px; font-weight: 700; margin: 0 0 4px;
-  color: var(--text);
+  font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--text);
 }
 .empty-state p {
-  font-size: 13px; color: var(--text-muted);
-  margin: 0; line-height: 1.5;
+  font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;
+}
+.empty-state .cta {
+  margin-top: 20px;
+  background: var(--brand); color: #000;
+  padding: 12px 24px; border-radius: 12px;
+  font-weight: 700; font-size: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
 }
 
-/* Loading skeleton */
+/* ---- Loading ---- */
 .skeleton {
   background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
-  border-radius: 8px;
-  height: 68px;
+  border-radius: 10px; height: 68px;
 }
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
 
-/* Track UI */
+/* ---- Track UI ---- */
 .track-hero {
-  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.08));
+  background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(59,130,246,0.08));
   border: 1px solid rgba(16,185,129,0.3);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: 20px;
+  padding: 24px 20px;
   text-align: center;
   margin: 16px 0;
 }
 .track-hero .distance {
-  font-size: 42px; font-weight: 900;
-  color: var(--success);
-  font-family: 'Space Grotesk', monospace;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-size: 44px; font-weight: 900; color: var(--success);
+  font-family: 'SF Mono', 'Space Grotesk', monospace;
+  line-height: 1; letter-spacing: -0.03em;
 }
 .track-hero .distance-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-top: 6px;
-  font-weight: 600;
-}
-.track-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.metric-card {
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 12px 8px;
-  text-align: center;
-}
-.metric-card .value {
-  font-size: 16px; font-weight: 800;
-  color: var(--text);
-}
-.metric-card .label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-dim);
-  margin-top: 2px;
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-muted);
+  margin-top: 8px; font-weight: 700;
 }
 .accuracy-pill {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface-2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  font-size: 13px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-2); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
 }
 .accuracy-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: background 0.2s, box-shadow 0.2s;
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; transition: background 0.2s, box-shadow 0.2s;
 }
 .accuracy-dot.good { background: var(--success); box-shadow: 0 0 10px var(--success); }
 .accuracy-dot.ok   { background: var(--brand); box-shadow: 0 0 10px var(--brand); }
 .accuracy-dot.bad  { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
 
+.track-metrics {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin-bottom: 16px;
+}
+.metric-card {
+  background: var(--surface-2); border-radius: 10px;
+  padding: 12px 8px; text-align: center;
+}
+.metric-card .value { font-size: 16px; font-weight: 800; }
+.metric-card .label {
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-dim); margin-top: 2px;
+}
 .btn-record {
-  width: 100%;
-  padding: 18px;
-  border-radius: 14px;
-  background: var(--success);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 800;
+  width: 100%; padding: 18px; border-radius: 14px;
+  background: var(--success); color: #fff;
+  font-size: 16px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 10px; margin-bottom: 10px;
   box-shadow: 0 8px 24px rgba(16,185,129,0.4);
-  transition: background 0.15s, transform 0.1s;
+  transition: all 0.15s;
 }
 .btn-record:active { transform: scale(0.98); }
 .btn-record.recording {
-  background: var(--danger);
-  box-shadow: 0 8px 24px rgba(239,68,68,0.4);
+  background: var(--danger); box-shadow: 0 8px 24px rgba(239,68,68,0.4);
 }
 .btn-record:disabled { opacity: 0.5; cursor: not-allowed; }
-
 .track-controls {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
 }
 .btn-secondary {
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-weight: 700;
-  font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  gap: 8px;
+  padding: 14px; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: background 0.12s, border-color 0.12s;
 }
 .btn-secondary:hover { background: var(--surface-3); border-color: var(--border-strong); }
 .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-danger-outline {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid rgba(239,68,68,0.4);
-  color: #fca5a5;
-  font-weight: 700;
-  font-size: 14px;
-  margin-top: 10px;
+  width: 100%; padding: 12px; border-radius: 12px;
+  background: transparent; border: 1px solid rgba(239,68,68,0.4);
+  color: #fca5a5; font-weight: 700; font-size: 14px; margin-top: 10px;
 }
 .btn-danger-outline:hover { background: rgba(239,68,68,0.1); }
 
-/* Stats UI */
+/* ---- Stats UI ---- */
 .stats-hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 16px 0;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin: 16px 0;
 }
 .stat-block {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
 }
-.stat-block .value {
-  font-size: 28px; font-weight: 900;
-  color: var(--text);
-  line-height: 1;
-}
+.stat-block .value { font-size: 28px; font-weight: 900; line-height: 1; }
 .stat-block .label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-top: 6px;
-  font-weight: 600;
+  font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted);
+  margin-top: 6px; font-weight: 700;
 }
-
 .progress-ring {
-  width: 60px; height: 60px;
-  border-radius: 50%;
+  width: 56px; height: 56px; border-radius: 50%;
   background: conic-gradient(var(--brand) var(--pct, 0%), var(--surface-3) 0);
   display: flex; align-items: center; justify-content: center;
   position: relative;
 }
 .progress-ring::before {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: var(--surface-2);
+  content: ''; position: absolute; inset: 6px;
+  border-radius: 50%; background: var(--surface-2);
 }
 .progress-ring span {
-  position: relative;
-  z-index: 1;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text);
+  position: relative; z-index: 1;
+  font-size: 13px; font-weight: 800;
 }
 
-.category-bars { margin-top: 16px; }
+.category-bars { margin-top: 8px; }
 .cat-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 0;
-  font-size: 13px;
+  padding: 8px 0; font-size: 13px;
 }
-.cat-row .label {
-  flex: 1;
-  display: flex; align-items: center; gap: 8px;
-}
+.cat-row .label { flex: 1; display: flex; align-items: center; gap: 8px; }
 .cat-row .bar-track {
-  flex: 2;
-  height: 8px;
-  background: var(--surface-3);
-  border-radius: 4px;
-  overflow: hidden;
+  flex: 2; height: 8px; background: var(--surface-3);
+  border-radius: 4px; overflow: hidden;
 }
-.cat-row .bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.4s;
-}
+.cat-row .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
 .cat-row .count {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  min-width: 30px;
-  text-align: right;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted); min-width: 30px; text-align: right;
 }
 
-/* ============ MODALS ============ */
+/* ---- Modal ---- */
 .modal-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   z-index: 100;
   animation: fade-in 0.2s ease-out;
 }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-
 .modal {
-  position: fixed;
-  z-index: 101;
+  position: fixed; z-index: 101;
   left: 0; right: 0; bottom: 0;
-  max-height: 90vh;
+  max-height: 92vh;
   background: var(--surface);
   border-radius: 22px 22px 0 0;
   display: flex; flex-direction: column;
   animation: slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 -12px 40px rgba(0,0,0,0.6);
 }
-@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
 .modal-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
@@ -685,15 +558,12 @@ a { color: var(--brand); }
   display: flex; align-items: center; gap: 10px;
 }
 .modal-close {
-  width: 32px; height: 32px;
-  border-radius: 10px;
+  width: 34px; height: 34px; border-radius: 10px;
   background: var(--surface-2);
   display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted);
-  font-size: 14px;
+  color: var(--text-muted); font-size: 14px;
 }
 .modal-close:hover { background: var(--surface-3); color: var(--text); }
-
 .modal-body {
   flex: 1; overflow-y: auto;
   padding: 20px;
@@ -703,209 +573,106 @@ a { color: var(--brand); }
   padding: 16px 20px calc(16px + var(--safe-bottom));
   border-top: 1px solid var(--border);
   display: flex; gap: 10px;
-  flex-shrink: 0;
-  background: var(--surface);
+  flex-shrink: 0; background: var(--surface);
 }
-.modal-footer .btn-primary { flex: 1; }
+.modal-footer .btn-primary { flex: 1; width: auto; }
 .modal-footer .btn-cancel {
-  flex: 0 0 40%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  font-weight: 700;
-  font-size: 15px;
+  flex: 0 0 40%; padding: 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text); font-weight: 700; font-size: 15px;
 }
 
-/* Form */
-.form-section {
-  margin-bottom: 20px;
-}
-.form-section:last-child { margin-bottom: 0; }
-.form-section-title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-.form-field {
-  display: flex; flex-direction: column; gap: 6px;
-  margin-bottom: 14px;
-}
+/* ---- Form ---- */
+.form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .form-field:last-child { margin-bottom: 0; }
 .form-field label {
-  font-size: 12px; font-weight: 600;
-  color: var(--text-muted);
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
   display: flex; align-items: center; gap: 6px;
 }
 .form-field label .req { color: var(--danger); }
-.form-field input[type="text"],
-.form-field input[type="email"],
-.form-field input[type="tel"],
-.form-field input[type="number"],
+.form-field input,
 .form-field select,
 .form-field textarea {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 14px;
-  border-radius: 10px;
-  font-size: 15px;
-  outline: none;
-  width: 100%;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 12px 14px; border-radius: 10px;
+  font-size: 15px; outline: none; width: 100%;
   transition: border-color 0.15s, background 0.15s;
 }
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: var(--brand);
-  background: var(--surface-3);
+  border-color: var(--brand); background: var(--surface-3);
 }
-.form-field textarea {
-  resize: vertical;
-  min-height: 70px;
-  font-family: inherit;
-}
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
+.form-field textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* Multi-select chips */
-.chip-group {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  padding: 4px 0;
-}
+/* ---- Chips ---- */
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
 .chip-toggle {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text-muted); padding: 8px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.12s;
 }
 .chip-toggle.selected {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #000;
+  background: var(--brand); border-color: var(--brand); color: #000;
 }
 
-/* Toggle switch */
+/* ---- Toggle ---- */
 .toggle-row {
   display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 10px 0;
+  justify-content: space-between; padding: 10px 0;
 }
 .toggle {
-  position: relative;
-  width: 46px; height: 26px;
-  background: var(--surface-3);
-  border-radius: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-  flex-shrink: 0;
+  position: relative; width: 46px; height: 26px;
+  background: var(--surface-3); border-radius: 13px;
+  cursor: pointer; transition: background 0.15s; flex-shrink: 0;
 }
 .toggle::after {
-  content: '';
-  position: absolute;
-  top: 3px; left: 3px;
-  width: 20px; height: 20px;
-  background: var(--text);
-  border-radius: 50%;
+  content: ''; position: absolute;
+  top: 3px; left: 3px; width: 20px; height: 20px;
+  background: var(--text); border-radius: 50%;
   transition: transform 0.2s;
 }
 .toggle.on { background: var(--success); }
 .toggle.on::after { transform: translateX(20px); background: #fff; }
 
-/* Photo grid */
-.photo-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.photo-cell {
-  aspect-ratio: 1;
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  background: var(--surface-2);
-  display: flex; align-items: center; justify-content: center;
-}
-.photo-cell img { width: 100%; height: 100%; object-fit: cover; }
-.photo-add {
-  border: 2px dashed var(--border-strong);
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: 24px;
-  transition: border-color 0.15s, color 0.15s;
-}
-.photo-add:hover { border-color: var(--brand); color: var(--brand); }
-.photo-remove {
-  position: absolute;
-  top: 4px; right: 4px;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: rgba(0,0,0,0.7);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
-}
-
-/* Quick actions sheet */
+/* ---- Quick actions ---- */
 .quick-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 .quick-action {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 12px;
+  border-radius: 16px;
+  padding: 24px 16px;
   display: flex; flex-direction: column;
-  align-items: center; gap: 8px;
-  text-align: center;
+  align-items: center; gap: 10px; text-align: center;
   transition: border-color 0.15s, background 0.15s, transform 0.1s;
 }
 .quick-action:active { transform: scale(0.96); }
 .quick-action:hover { border-color: var(--brand); background: var(--surface-3); }
 .quick-action .icon-wrap {
-  width: 48px; height: 48px;
-  border-radius: 14px;
+  width: 56px; height: 56px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
+  font-size: 24px;
 }
-.quick-action .label {
-  font-size: 13px; font-weight: 700;
-  color: var(--text);
-}
-.quick-action .sub {
-  font-size: 11px;
-  color: var(--text-dim);
-}
+.quick-action .label { font-size: 14px; font-weight: 700; color: var(--text); }
+.quick-action .sub { font-size: 12px; color: var(--text-dim); }
 
-/* Toast */
+/* ---- Toast ---- */
 #toast {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--bottom-nav-h) + 90px + var(--safe-bottom));
+  bottom: calc(var(--bottomnav-h) + 90px + var(--safe-bottom));
   transform: translateX(-50%) translateY(100px);
   z-index: 9999;
-  background: var(--brand);
-  color: #000;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 13px;
-  max-width: 90vw;
-  text-align: center;
+  background: var(--brand); color: #000;
+  padding: 12px 20px; border-radius: 12px;
+  font-weight: 700; font-size: 13px;
+  max-width: 90vw; text-align: center;
   box-shadow: 0 12px 32px rgba(0,0,0,0.5);
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -913,36 +680,57 @@ a { color: var(--brand); }
 #toast.show { transform: translateX(-50%) translateY(0); }
 #toast.error { background: var(--danger); color: #fff; }
 
-/* ============ RESPONSIVE: TABLET / DESKTOP ============ */
+/* ============================================================
+   TABLET & DESKTOP
+   ============================================================ */
 @media (min-width: 768px) {
+  .brand-badge span { display: block; }
   .top-bar {
     top: calc(16px + var(--safe-top));
-    left: 16px; right: 16px;
-    height: 64px;
+    left: calc(440px + 16px);        /* make room for sidebar */
+    right: 16px;
+    height: 60px;
   }
+  .search-bar { height: 44px; }
+  .user-btn { width: 44px; height: 44px; }
+
+  /* Sheet becomes fixed sidebar */
   .sheet {
-    left: 16px; right: auto;
-    top: calc(64px + 32px + var(--safe-top));
+    left: 16px;
+    top: calc(16px + var(--safe-top));
     bottom: 16px;
-    height: auto;
+    right: auto;
     width: 420px;
-    transform: none !important;
+    height: auto;
     border-radius: 20px;
-    opacity: 1;
-    pointer-events: auto;
+    transform: none !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
   .sheet-handle { display: none; }
-  .sheet-body { padding-top: 16px; }
+  .sheet-tabs { padding: 14px 16px 12px; }
+  .sheet-body { padding: 0 16px 20px; }
+
+  /* Hide bottom nav */
   .bottom-nav { display: none; }
+
+  /* FABs positioned bottom-right */
   .fab-stack {
-    bottom: calc(16px + var(--safe-bottom));
-    right: 16px;
+    bottom: calc(24px + var(--safe-bottom));
+    right: 24px;
+    gap: 12px;
   }
+  .fab { width: 54px; height: 54px; font-size: 20px; }
+
+  .mode-indicator {
+    top: calc(60px + 34px + var(--safe-top));
+    left: calc(440px + 16px + (100vw - 440px - 32px) / 2);
+    transform: translateX(-50%);
+  }
+
   .modal {
-    left: 50%; bottom: auto;
-    top: 50%;
+    left: 50%; bottom: auto; top: 50%;
     transform: translate(-50%, -50%);
-    width: 520px;
+    width: 560px;
     max-height: 85vh;
     border-radius: 20px;
     animation: modal-pop 0.24s ease-out;
@@ -951,12 +739,30 @@ a { color: var(--brand); }
     from { opacity: 0; transform: translate(-50%, -48%); }
     to   { opacity: 1; transform: translate(-50%, -50%); }
   }
+
   #toast { bottom: 24px; }
-  .mode-indicator { top: calc(64px + 34px + var(--safe-top)); }
+
+  .quick-actions { grid-template-columns: 1fr 1fr; }
 }
 
 @media (min-width: 1200px) {
   .sheet { width: 460px; }
+  .top-bar { left: calc(460px + 16px); }
+  .mode-indicator {
+    left: calc(460px + 16px + (100vw - 460px - 32px) / 2);
+  }
+  .quick-actions { grid-template-columns: 1fr 1fr; }
+}
+
+/* ============================================================
+   LARGE DESKTOP — wider sheet, more breathing room
+   ============================================================ */
+@media (min-width: 1400px) {
+  .sheet { width: 500px; }
+  .top-bar { left: calc(500px + 16px); }
+  .mode-indicator {
+    left: calc(500px + 16px + (100vw - 500px - 32px) / 2);
+  }
 }
 </style>
 </head>
@@ -967,14 +773,14 @@ a { color: var(--brand); }
   <div class="login-card">
     <div class="login-logo">LG</div>
     <h1>LPU GO Data Studio</h1>
-    <p class="subtitle">Team data collection tool</p>
+    <p class="subtitle">Team campus data collection</p>
     <form id="login-form">
-      <input id="login-email" type="email" placeholder="Email" autocomplete="email" required style="margin-bottom:10px;width:100%;">
-      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required style="margin-bottom:16px;width:100%;">
-      <button type="submit" class="btn-primary" id="btn-login" style="width:100%;">Sign In</button>
+      <input id="login-email" type="email" placeholder="Email" autocomplete="email" required style="margin-bottom:10px;">
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required style="margin-bottom:16px;">
+      <button type="submit" class="btn-primary" id="btn-login">Sign In</button>
     </form>
     <div id="login-error"></div>
-    <div class="login-hint">Ask your team lead for login credentials</div>
+    <div class="login-hint">Credentials provided by your team lead</div>
   </div>
 </div>
 
@@ -986,63 +792,76 @@ a { color: var(--brand); }
   <header class="top-bar">
     <div class="brand-badge">
       <div class="mark">LG</div>
+      <span>LPU GO</span>
     </div>
     <div class="search-bar">
       <i class="fa-solid fa-magnifying-glass"></i>
       <input type="text" id="search-input" placeholder="Search buildings, places…" autocomplete="off">
     </div>
-    <button class="user-btn" id="user-btn" title="Account">
+    <button class="user-btn" id="user-btn" title="Sign out">
       <span id="user-initial">U</span>
     </button>
   </header>
 
   <!-- Mode indicator -->
   <div class="mode-indicator hidden" id="mode-indicator">
-    <i class="fa-solid fa-location-dot"></i>
-    <span id="mode-text">Tap map to add place</span>
+    <i class="fa-solid fa-crosshairs"></i>
+    <span id="mode-text">Tap map to add</span>
     <button id="mode-cancel"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
   <!-- FABs -->
   <div class="fab-stack">
+    <button class="fab fab-add" id="fab-add" title="Add new"><i class="fa-solid fa-plus"></i></button>
     <button class="fab" id="fab-locate" title="My location"><i class="fa-solid fa-location-crosshairs"></i></button>
     <button class="fab active" id="fab-3d" title="Toggle 3D"><i class="fa-solid fa-cube"></i></button>
   </div>
 
-  <!-- Sheet (list / track / stats) -->
-  <div class="sheet" id="sheet">
+  <!-- Sheet / Sidebar -->
+  <aside class="sheet" id="sheet">
     <div class="sheet-handle"></div>
+    <div class="sheet-tabs">
+      <button class="sheet-tab active" data-view="list">
+        <i class="fa-solid fa-list"></i> List
+      </button>
+      <button class="sheet-tab" data-view="track">
+        <i class="fa-solid fa-person-walking"></i> Track
+      </button>
+      <button class="sheet-tab" data-view="stats">
+        <i class="fa-solid fa-chart-pie"></i> Stats
+      </button>
+    </div>
     <div class="sheet-body" id="sheet-body"></div>
-  </div>
+  </aside>
 
-  <!-- Bottom nav (mobile) -->
+  <!-- Bottom nav (mobile only) -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-view="map">
+    <button class="nav-btn active" data-nav="map">
       <i class="fa-solid fa-map"></i><span>Map</span>
     </button>
-    <button class="nav-btn" data-view="list">
+    <button class="nav-btn" data-nav="list">
       <i class="fa-solid fa-list"></i><span>List</span>
     </button>
-    <button class="nav-btn add-btn" data-view="add" style="background:none;">
-      <i class="fa-solid fa-plus"></i>
+    <button class="nav-btn nav-add" data-nav="add">
+      <i class="fa-solid fa-plus"></i><span>Add</span>
     </button>
-    <button class="nav-btn" data-view="track">
+    <button class="nav-btn" data-nav="track">
       <i class="fa-solid fa-person-walking"></i><span>Track</span>
     </button>
-    <button class="nav-btn" data-view="stats">
+    <button class="nav-btn" data-nav="stats">
       <i class="fa-solid fa-chart-pie"></i><span>Stats</span>
     </button>
   </nav>
 </div>
 
-<!-- Modals -->
+<!-- Modal system -->
 <div class="modal-backdrop hidden" id="modal-backdrop"></div>
 <div class="modal hidden" id="modal"></div>
 
 <!-- Toast -->
 <div id="toast"></div>
 
-<!-- ============ SCRIPTS ============ -->
+<!-- Scripts -->
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
@@ -1056,7 +875,8 @@ a { color: var(--brand); }
   if (!CFG) { alert('config.js missing!'); return; }
 
   if (CFG.supabaseUrl.includes('YOUR_PROJECT') || CFG.supabaseKey.includes('YOUR_ANON')) {
-    document.getElementById('login-error').innerHTML = '<span style="color:var(--brand);">⚠️ Edit config.js — add Supabase URL & key</span>';
+    document.getElementById('login-error').innerHTML =
+      '<span style="color:var(--brand);">⚠️ Edit config.js — add Supabase URL &amp; anon key</span>';
   }
 
   const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
@@ -1068,10 +888,10 @@ a { color: var(--brand); }
     user: null,
     places: [],
     paths: [],
-    activeView: 'map',
+    activeView: 'list',
     activeCategory: 'all',
     searchQuery: '',
-    drawMode: null,           // null | 'place' | 'building' | 'path'
+    drawMode: null,
     pendingVertices: [],
     pendingMarkers: [],
     is3D: true,
@@ -1106,8 +926,7 @@ a { color: var(--brand); }
   }
   function esc(s) {
     return String(s ?? '').replace(/[&<>"']/g, c =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
-    );
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
   function catInfo(id) {
     return CFG.categories.find(c => c.id === id) || CFG.categories[CFG.categories.length - 1];
@@ -1115,6 +934,7 @@ a { color: var(--brand); }
   function fmtDist(m) {
     return m > 1000 ? (m / 1000).toFixed(2) + ' km' : Math.round(m) + ' m';
   }
+  const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
 
   // ============================================================
   // AUTH
@@ -1132,6 +952,8 @@ a { color: var(--brand); }
     $('login-screen').classList.add('hidden');
     $('main-screen').classList.remove('hidden');
     initMap();
+    // On desktop the sheet is always visible → open it
+    if (isDesktop()) openSheet();
   }
 
   $('login-form').addEventListener('submit', async e => {
@@ -1198,7 +1020,6 @@ a { color: var(--brand); }
   function setupLayers() {
     const map = state.map;
 
-    // Paths
     map.addSource('paths-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({
       id: 'paths-casing', type: 'line', source: 'paths-src',
@@ -1211,7 +1032,6 @@ a { color: var(--brand); }
       paint: { 'line-color': '#10b981', 'line-width': 4 },
     });
 
-    // Footprints
     map.addSource('footprints-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({
       id: 'footprints-3d', type: 'fill-extrusion', source: 'footprints-src',
@@ -1224,7 +1044,6 @@ a { color: var(--brand); }
       },
     });
 
-    // Temp draw line
     map.addSource('temp-line', {
       type: 'geojson',
       data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
@@ -1234,7 +1053,6 @@ a { color: var(--brand); }
       paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-dasharray': [2, 2] },
     });
 
-    // Track
     map.addSource('track-src', {
       type: 'geojson',
       data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
@@ -1245,7 +1063,6 @@ a { color: var(--brand); }
       paint: { 'line-color': '#3b82f6', 'line-width': 5, 'line-opacity': 0.9 },
     });
 
-    // Accuracy circle
     map.addSource('accuracy-src', {
       type: 'geojson',
       data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } },
@@ -1284,15 +1101,19 @@ a { color: var(--brand); }
     if (!state.map.getSource('temp-line')) return;
     const c = state.pendingVertices.slice();
     if (state.drawMode === 'building' && c.length >= 3) c.push(c[0]);
-    state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: c } });
+    state.map.getSource('temp-line').setData({
+      type: 'Feature', geometry: { type: 'LineString', coordinates: c },
+    });
   }
 
   function clearPending() {
     state.pendingVertices = [];
     state.pendingMarkers.forEach(m => m.remove());
     state.pendingMarkers = [];
-    if (state.map.getSource('temp-line')) {
-      state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+    if (state.map && state.map.getSource('temp-line')) {
+      state.map.getSource('temp-line').setData({
+        type: 'Feature', geometry: { type: 'LineString', coordinates: [] },
+      });
     }
   }
 
@@ -1348,7 +1169,7 @@ a { color: var(--brand); }
         .setPopup(new maplibregl.Popup({ offset: 22, closeButton: false }).setHTML(
           `<div style="font-family:inherit;min-width:160px;">
             <div style="color:${cat.color};font-weight:800;font-size:14px;">${esc(p.name)}</div>
-            <div style="color:#94a3b8;font-size:12px;margin-top:3px;">${cat.label}${p.short_code ? ' · '+esc(p.short_code) : ''}</div>
+            <div style="color:#94a3b8;font-size:12px;margin-top:3px;">${cat.label}${p.short_code ? ' · ' + esc(p.short_code) : ''}</div>
           </div>`
         ))
         .addTo(state.map);
@@ -1377,45 +1198,56 @@ a { color: var(--brand); }
   }
 
   // ============================================================
-  // BOTTOM NAV
+  // SHEET CONTROL
   // ============================================================
+  function openSheet() {
+    $('sheet').classList.add('open');
+  }
+  function closeSheet() {
+    if (isDesktop()) return;  // never close on desktop
+    $('sheet').classList.remove('open');
+  }
+
+  function setActiveTab(view) {
+    document.querySelectorAll('.sheet-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.view === view);
+    });
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.nav === view);
+    });
+    state.activeView = view;
+  }
+
+  // ============================================================
+  // TAB / NAV WIRING
+  // ============================================================
+  document.querySelectorAll('.sheet-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      setActiveTab(tab.dataset.view);
+      renderCurrentView();
+    });
+  });
+
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
+      const view = btn.dataset.nav;
+      if (view === 'map') {
+        closeSheet();
+        setActiveTab('map');
+        return;
+      }
       if (view === 'add') {
         openAddMenu();
         return;
       }
-      if (view === 'map') {
-        closeSheet();
-        setActiveNav('map');
-        return;
-      }
-      setActiveNav(view);
-      state.activeView = view;
+      setActiveTab(view);
       renderCurrentView();
       openSheet();
     });
   });
 
-  function setActiveNav(view) {
-    document.querySelectorAll('.nav-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.view === view);
-    });
-    state.activeView = view;
-  }
-
-  function openSheet() {
-    $('sheet').classList.add('open');
-  }
-  function closeSheet() {
-    $('sheet').classList.remove('open');
-    setActiveNav('map');
-    state.activeView = 'map';
-  }
-
   // ============================================================
-  // RENDER: current view
+  // RENDER CURRENT VIEW
   // ============================================================
   function renderCurrentView() {
     if (state.loading) {
@@ -1426,9 +1258,9 @@ a { color: var(--brand); }
         </div>`;
       return;
     }
-    if (state.activeView === 'list') renderListView();
-    else if (state.activeView === 'track') renderTrackView();
+    if (state.activeView === 'track') renderTrackView();
     else if (state.activeView === 'stats') renderStatsView();
+    else renderListView();
   }
 
   // ============================================================
@@ -1436,14 +1268,14 @@ a { color: var(--brand); }
   // ============================================================
   function renderListView() {
     const q = state.searchQuery.toLowerCase();
-    let filteredPlaces = state.places.filter(p => {
+    const filteredPlaces = state.places.filter(p => {
       if (state.activeCategory !== 'all' && p.category !== state.activeCategory) return false;
       if (!q) return true;
       return (p.name + ' ' + (p.short_code || '') + ' ' + (p.full_name || '') + ' ' + (p.description || '')).toLowerCase().includes(q);
     });
-    let filteredPaths = q ? [] : state.paths; // hide paths when searching
+    const filteredPaths = q ? [] : state.paths;
 
-    // Category chips
+    // Category counts
     const counts = { all: state.places.length };
     CFG.categories.forEach(c => counts[c.id] = 0);
     state.places.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
@@ -1468,17 +1300,22 @@ a { color: var(--brand); }
 
     $('sheet-body').innerHTML = `
       <div class="filter-chips">${chips}</div>
+      <div class="section-header">
+        <span>${q ? 'Search results' : 'All items'}</span>
+        <span class="count">${total}</span>
+      </div>
       ${total === 0
         ? `<div class="empty-state">
             <div class="emoji">📭</div>
             <h3>${q ? 'No matches' : 'No items yet'}</h3>
-            <p>${q ? 'Try a different search' : 'Tap the + button to start collecting data'}</p>
+            <p>${q ? 'Try a different search term' : 'Start collecting data for LPU campus'}</p>
+            ${!q ? `<button class="cta" onclick="window.openAddMenu()"><i class="fa-solid fa-plus"></i> Add first item</button>` : ''}
           </div>`
         : `<div class="items-grid">${itemsHTML}</div>`
       }
     `;
 
-    $('sheet-body').querySelectorAll('.chip').forEach(chip => {
+    document.querySelectorAll('.filter-chips .chip').forEach(chip => {
       chip.addEventListener('click', () => {
         state.activeCategory = chip.dataset.cat;
         renderListView();
@@ -1511,7 +1348,7 @@ a { color: var(--brand); }
       : `<i class="fa-solid ${cat.icon}" style="color:${cat.color};"></i>`;
 
     const canDelete = item.created_by === state.user.id;
-    const editBtn = isPath ? '' : `<button class="icon-btn" data-edit="${item.id}" data-type="${type}"><i class="fa-solid fa-pen"></i></button>`;
+    const editBtn = isPath ? '' : `<button class="icon-btn" data-edit="${item.id}"><i class="fa-solid fa-pen"></i></button>`;
     const delBtn = canDelete ? `<button class="icon-btn danger" data-delete="${item.id}" data-type="${type}"><i class="fa-solid fa-trash"></i></button>` : '';
 
     return `
@@ -1527,23 +1364,20 @@ a { color: var(--brand); }
   }
 
   function bindItemActions() {
-    $('sheet-body').querySelectorAll('.item-card').forEach(card => {
+    document.querySelectorAll('.item-card').forEach(card => {
       card.addEventListener('click', e => {
         if (e.target.closest('.icon-btn')) return;
-        const id = card.dataset.id;
-        const type = card.dataset.type;
-        flyToItem(id, type);
+        flyToItem(card.dataset.id, card.dataset.type);
       });
     });
-    $('sheet-body').querySelectorAll('[data-edit]').forEach(btn => {
+    document.querySelectorAll('[data-edit]').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        const id = btn.dataset.edit;
-        const item = state.places.find(p => p.id === id);
+        const item = state.places.find(p => p.id === btn.dataset.edit);
         if (item) openEditForm(item);
       });
     });
-    $('sheet-body').querySelectorAll('[data-delete]').forEach(btn => {
+    document.querySelectorAll('[data-delete]').forEach(btn => {
       btn.addEventListener('click', async e => {
         e.stopPropagation();
         if (!confirm('Delete this item?')) return;
@@ -1557,19 +1391,18 @@ a { color: var(--brand); }
   }
 
   function flyToItem(id, type) {
-    let item;
     if (type === 'path') {
-      item = state.paths.find(p => p.id === id);
+      const item = state.paths.find(p => p.id === id);
       if (item?.geojson?.coordinates?.length) {
         const coords = item.geojson.coordinates;
         const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
         state.map.fitBounds(bounds, { padding: 80, pitch: 50, duration: 900 });
       }
     } else {
-      item = state.places.find(p => p.id === id);
+      const item = state.places.find(p => p.id === id);
       if (item) state.map.flyTo({ center: [item.lng, item.lat], zoom: 18, pitch: 55, duration: 900 });
     }
-    if (window.innerWidth < 768) closeSheet();
+    if (!isDesktop()) closeSheet();
   }
 
   // ============================================================
@@ -1578,11 +1411,10 @@ a { color: var(--brand); }
   $('search-input').addEventListener('input', e => {
     state.searchQuery = e.target.value.trim();
     if (state.activeView !== 'list') {
-      state.activeView = 'list';
-      setActiveNav('list');
-      openSheet();
+      setActiveTab('list');
     }
-    renderListView();
+    renderCurrentView();
+    if (!isDesktop()) openSheet();
   });
 
   // ============================================================
@@ -1592,7 +1424,7 @@ a { color: var(--brand); }
     showModal(`
       <div class="modal-header">
         <div class="modal-title">➕ Add new data</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
         <div class="quick-actions">
@@ -1614,21 +1446,18 @@ a { color: var(--brand); }
           <button class="quick-action" data-action="track">
             <div class="icon-wrap" style="background:rgba(168,85,247,0.15);color:#a855f7;"><i class="fa-solid fa-person-walking"></i></div>
             <div class="label">GPS Track</div>
-            <div class="sub">Walk with phone</div>
+            <div class="sub">Walk &amp; record</div>
           </button>
-        </div>
-        <div style="font-size:12px;color:var(--text-dim);text-align:center;line-height:1.5;padding:8px;">
-          Pick a mode, then follow the prompt at the top of the map.
         </div>
       </div>
     `);
+
     document.querySelectorAll('.quick-action').forEach(b => {
       b.addEventListener('click', () => {
         const action = b.dataset.action;
         closeModal();
         if (action === 'track') {
-          state.activeView = 'track';
-          setActiveNav('track');
+          setActiveTab('track');
           renderCurrentView();
           openSheet();
         } else {
@@ -1637,17 +1466,18 @@ a { color: var(--brand); }
       });
     });
   }
+  window.openAddMenu = openAddMenu;
 
   function startDrawMode(mode) {
     state.drawMode = mode;
     clearPending();
-    const hint = mode === 'place' ? 'Tap on the map to add a place'
-              : mode === 'building' ? 'Tap points around the building, then double-tap to finish'
-              : 'Tap points along the path, then double-tap to finish';
+    const hint = mode === 'place' ? 'Tap map to add place'
+              : mode === 'building' ? 'Tap points around building · double-tap to finish'
+              : 'Tap points along path · double-tap to finish';
     $('mode-text').textContent = hint;
     $('mode-indicator').classList.remove('hidden');
-    closeSheet();
-    setActiveNav('map');
+    if (!isDesktop()) closeSheet();
+    setActiveTab('map');
   }
 
   function cancelDrawMode() {
@@ -1659,23 +1489,21 @@ a { color: var(--brand); }
   $('mode-cancel').addEventListener('click', cancelDrawMode);
 
   // ============================================================
-  // PLACE FORM
+  // FORM: PLACE
   // ============================================================
   function openPlaceForm(lat, lng) {
     cancelDrawMode();
     showModal(`
       <div class="modal-header">
         <div class="modal-title">📍 New Place</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="modal-body">
-        ${placeFormFields({ lat, lng })}
-      </div>
+      <div class="modal-body">${placeFormFields({ lat, lng })}</div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
         <button class="btn-primary" id="modal-save">Save Place</button>
       </div>
-    `, { saveLabel: 'Save Place', onSave: async () => {
+    `, async () => {
       const data = collectPlaceData();
       if (!data) return;
       data.lat = lat;
@@ -1686,11 +1514,11 @@ a { color: var(--brand); }
       closeModal();
       toast('Place added ✓');
       await loadAllData();
-    }});
+    });
   }
 
   // ============================================================
-  // BUILDING FORM
+  // FORM: BUILDING
   // ============================================================
   function openBuildingForm(vertices) {
     cancelDrawMode();
@@ -1702,16 +1530,14 @@ a { color: var(--brand); }
     showModal(`
       <div class="modal-header">
         <div class="modal-title">🏢 New Building</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="modal-body">
-        ${placeFormFields({ lat: centerLat, lng: centerLng, isBuilding: true })}
-      </div>
+      <div class="modal-body">${placeFormFields({ lat: centerLat, lng: centerLng, isBuilding: true })}</div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
         <button class="btn-primary" id="modal-save">Save Building</button>
       </div>
-    `, { saveLabel: 'Save Building', onSave: async () => {
+    `, async () => {
       const data = collectPlaceData();
       if (!data) return;
       data.lat = centerLat;
@@ -1722,11 +1548,11 @@ a { color: var(--brand); }
       closeModal();
       toast('Building added ✓');
       await loadAllData();
-    }});
+    });
   }
 
   // ============================================================
-  // PATH FORM
+  // FORM: PATH
   // ============================================================
   function openPathForm(vertices) {
     cancelDrawMode();
@@ -1735,12 +1561,12 @@ a { color: var(--brand); }
     showModal(`
       <div class="modal-header">
         <div class="modal-title">🛤 New Walkway</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
         <div class="form-field">
           <label>Name (optional)</label>
-          <input type="text" id="f-name" placeholder="e.g. Main Gate → Block 27" autofocus>
+          <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus>
         </div>
         <div class="form-row">
           <div class="form-field">
@@ -1768,29 +1594,20 @@ a { color: var(--brand); }
           </div>
         </div>
         <div class="form-field">
-          <label>Notes (optional)</label>
-          <textarea id="f-notes" placeholder="Landmarks, surface condition, etc…"></textarea>
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Landmarks, surface condition…"></textarea>
         </div>
-        <div style="background:var(--surface-2);padding:12px;border-radius:10px;">
-          <div class="toggle-row">
-            <span style="font-size:14px;">💡 Lit at night</span>
-            <div class="toggle on" id="f-lit"></div>
-          </div>
-          <div class="toggle-row">
-            <span style="font-size:14px;">♿ Wheelchair accessible</span>
-            <div class="toggle on" id="f-accessible"></div>
-          </div>
-          <div class="toggle-row">
-            <span style="font-size:14px;">🪜 Has steps</span>
-            <div class="toggle" id="f-steps"></div>
-          </div>
+        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-top:6px;">
+          <div class="toggle-row"><span style="font-size:14px;">💡 Lit at night</span><div class="toggle on" id="f-lit"></div></div>
+          <div class="toggle-row"><span style="font-size:14px;">♿ Wheelchair accessible</span><div class="toggle on" id="f-accessible"></div></div>
+          <div class="toggle-row"><span style="font-size:14px;">🪜 Has steps</span><div class="toggle" id="f-steps"></div></div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
         <button class="btn-primary" id="modal-save">Save Walkway</button>
       </div>
-    `, { saveLabel: 'Save Walkway', onSave: async () => {
+    `, async () => {
       const data = {
         name: $('f-name').value.trim() || null,
         path_type: $('f-path-type').value,
@@ -1809,19 +1626,16 @@ a { color: var(--brand); }
       closeModal();
       toast('Walkway added ✓');
       await loadAllData();
-    }});
-
-    bindToggles();
+    });
   }
 
   // ============================================================
-  // EDIT FORM
+  // FORM: EDIT
   // ============================================================
   function openEditForm(item) {
     const catOpts = CFG.categories.map(c =>
       `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`
     ).join('');
-
     const amenityChips = CFG.amenities.map(a =>
       `<button type="button" class="chip-toggle ${(item.amenities || []).includes(a.id) ? 'selected' : ''}" data-amenity="${a.id}">${a.label}</button>`
     ).join('');
@@ -1829,12 +1643,12 @@ a { color: var(--brand); }
     showModal(`
       <div class="modal-header">
         <div class="modal-title">✏️ Edit ${item.footprint_geojson ? 'Building' : 'Place'}</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
         <div class="form-field">
           <label>Name <span class="req">*</span></label>
-          <input type="text" id="f-name" value="${esc(item.name)}" required>
+          <input type="text" id="f-name" value="${esc(item.name)}">
         </div>
         <div class="form-row">
           <div class="form-field">
@@ -1851,16 +1665,16 @@ a { color: var(--brand); }
           <input type="text" id="f-fullname" value="${esc(item.full_name || '')}" placeholder="Block 27 — CSE Department">
         </div>
         ${item.footprint_geojson ? `
-        <div class="form-row">
-          <div class="form-field">
-            <label>Height (m)</label>
-            <input type="number" id="f-height" value="${item.height_m || 12}" min="1" max="200">
-          </div>
-          <div class="form-field">
-            <label>Floors</label>
-            <input type="number" id="f-floors" value="${item.floors || ''}" min="1" max="50">
-          </div>
-        </div>` : ''}
+          <div class="form-row">
+            <div class="form-field">
+              <label>Height (m)</label>
+              <input type="number" id="f-height" value="${item.height_m || 12}" min="1" max="200">
+            </div>
+            <div class="form-field">
+              <label>Floors</label>
+              <input type="number" id="f-floors" value="${item.floors || ''}" min="1" max="50">
+            </div>
+          </div>` : ''}
         <div class="form-field">
           <label>Amenities</label>
           <div class="chip-group" id="amenity-group">${amenityChips}</div>
@@ -1868,18 +1682,18 @@ a { color: var(--brand); }
         <div class="form-row">
           <div class="form-field">
             <label>Opening hours</label>
-            <input type="text" id="f-hours" value="${esc(item.opening_hours || '')}" placeholder="8AM–8PM, Mon–Sat">
+            <input type="text" id="f-hours" value="${esc(item.opening_hours || '')}" placeholder="8AM–8PM">
           </div>
           <div class="form-field">
             <label>Contact phone</label>
-            <input type="tel" id="f-phone" value="${esc(item.contact_phone || '')}" placeholder="+91...">
+            <input type="tel" id="f-phone" value="${esc(item.contact_phone || '')}">
           </div>
         </div>
         <div class="form-field">
-          <label>Description / notes</label>
-          <textarea id="f-desc" placeholder="Details…">${esc(item.description || item.notes || '')}</textarea>
+          <label>Description</label>
+          <textarea id="f-desc">${esc(item.description || item.notes || '')}</textarea>
         </div>
-        <div style="background:var(--surface-2);padding:12px;border-radius:10px;margin-top:12px;">
+        <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
           <div class="toggle-row">
             <span style="font-size:14px;">♿ Wheelchair accessible</span>
             <div class="toggle ${item.is_accessible ? 'on' : ''}" id="f-accessible"></div>
@@ -1887,10 +1701,10 @@ a { color: var(--brand); }
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
         <button class="btn-primary" id="modal-save">Save Changes</button>
       </div>
-    `, { saveLabel: 'Save Changes', onSave: async () => {
+    `, async () => {
       const name = $('f-name').value.trim();
       if (!name) { toast('Name required', true); return; }
       const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
@@ -1915,85 +1729,56 @@ a { color: var(--brand); }
       closeModal();
       toast('Updated ✓');
       await loadAllData();
-    }});
-
-    bindToggles();
-    bindAmenityChips();
+    });
   }
 
   // ============================================================
-  // TRACK
+  // TRACK VIEW
   // ============================================================
   function renderTrackView() {
-    const accClass = 'bad';
-    const accText = state.watchId ? 'Waiting…' : 'Not started';
-
     $('sheet-body').innerHTML = `
       <div class="track-hero">
         <div class="distance" id="track-dist">${fmtDist(state.totalDistance)}</div>
         <div class="distance-label">Distance walked</div>
       </div>
-
       <div class="accuracy-pill">
-        <div class="accuracy-dot ${accClass}" id="track-acc-dot"></div>
-        <span>GPS accuracy: <b id="track-acc-text">${accText}</b></span>
+        <div class="accuracy-dot bad" id="track-acc-dot"></div>
+        <span>GPS accuracy: <b id="track-acc-text">${state.watchId ? 'Waiting…' : 'Not started'}</b></span>
       </div>
-
       <div class="track-metrics">
-        <div class="metric-card">
-          <div class="value" id="track-time">0:00</div>
-          <div class="label">Time</div>
-        </div>
-        <div class="metric-card">
-          <div class="value" id="track-points">${state.trackPoints.length}</div>
-          <div class="label">Points</div>
-        </div>
-        <div class="metric-card">
-          <div class="value" id="track-speed">0.0</div>
-          <div class="label">km/h</div>
-        </div>
+        <div class="metric-card"><div class="value" id="track-time">0:00</div><div class="label">Time</div></div>
+        <div class="metric-card"><div class="value" id="track-points">${state.trackPoints.length}</div><div class="label">Points</div></div>
+        <div class="metric-card"><div class="value" id="track-speed">0.0</div><div class="label">km/h</div></div>
       </div>
-
       <button class="btn-record ${state.isRecording ? 'recording' : ''}" id="btn-record" ${state.isRecording ? 'disabled' : ''}>
         <i class="fa-solid fa-${state.isRecording ? 'circle-stop' : 'circle'}"></i>
         ${state.isRecording ? 'Recording…' : 'Start Recording'}
       </button>
-
       <div class="track-controls">
         <button class="btn-secondary" id="btn-pause" ${!state.isRecording ? 'disabled' : ''}>
           <i class="fa-solid fa-${state.isPaused ? 'play' : 'pause'}"></i>
           ${state.isPaused ? 'Resume' : 'Pause'}
         </button>
         <button class="btn-secondary" id="btn-stop" ${!state.isRecording ? 'disabled' : ''}>
-          <i class="fa-solid fa-stop"></i> Stop & Save
+          <i class="fa-solid fa-stop"></i> Stop &amp; Save
         </button>
       </div>
-
       ${state.trackPoints.length > 0 && !state.isRecording ? `
         <button class="btn-danger-outline" id="btn-discard">
           <i class="fa-solid fa-trash"></i> Discard Track
-        </button>
-      ` : ''}
-
+        </button>` : ''}
       <div style="margin-top:20px;padding:14px;background:var(--surface-2);border-radius:10px;font-size:12px;color:var(--text-muted);line-height:1.6;">
         <b style="color:var(--text);">📌 How it works:</b> Walk along the path with your phone. Points are auto-filtered (accuracy &lt;30m, ≥2m apart). Blue line shows your track live.
       </div>
     `;
-
     bindTrackControls();
   }
 
   function bindTrackControls() {
-    const recBtn = $('btn-record');
-    if (recBtn && !state.isRecording) recBtn.onclick = startRecording;
-    const pauseBtn = $('btn-pause');
-    if (pauseBtn) pauseBtn.onclick = state.isPaused ? resumeRecording : pauseRecording;
-    const stopBtn = $('btn-stop');
-    if (stopBtn) stopBtn.onclick = stopRecording;
-    const discBtn = $('btn-discard');
-    if (discBtn) discBtn.onclick = () => {
-      if (confirm('Discard this track?')) { clearTrack(); renderTrackView(); }
-    };
+    const rec = $('btn-record'); if (rec && !state.isRecording) rec.onclick = startRecording;
+    const pause = $('btn-pause'); if (pause) pause.onclick = state.isPaused ? resumeRecording : pauseRecording;
+    const stop = $('btn-stop'); if (stop) stop.onclick = stopRecording;
+    const disc = $('btn-discard'); if (disc) disc.onclick = () => { if (confirm('Discard this track?')) { clearTrack(); renderTrackView(); } };
   }
 
   function startRecording() {
@@ -2008,13 +1793,13 @@ a { color: var(--brand); }
     state.lastAcceptedPoint = null;
 
     state.watchId = navigator.geolocation.watchPosition(
-      onPositionUpdate,
-      onPositionError,
+      onPositionUpdate, onPositionError,
       { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
 
     renderTrackView();
     toast('Recording started');
+    if (!isDesktop()) closeSheet();
   }
 
   function onPositionUpdate(pos) {
@@ -2042,15 +1827,11 @@ a { color: var(--brand); }
     const p = { lng: longitude, lat: latitude, accuracy, timestamp: pos.timestamp };
     state.trackPoints.push(p);
     state.lastAcceptedPoint = p;
-
     updateTrackLine();
     updateTrackStats(speed);
   }
 
-  function onPositionError(err) {
-    console.warn(err);
-    toast('GPS: ' + (err.message || 'error'), true);
-  }
+  function onPositionError(err) { console.warn(err); toast('GPS: ' + (err.message || 'error'), true); }
 
   function updateCurrentPos(lng, lat, accuracy) {
     if (!state.currentPosMarker) {
@@ -2075,26 +1856,22 @@ a { color: var(--brand); }
   }
 
   function updateTrackStats(speed) {
-    const distEl = $('track-dist');
-    if (distEl) distEl.textContent = fmtDist(state.totalDistance);
-    const pEl = $('track-points');
-    if (pEl) pEl.textContent = state.trackPoints.length;
-    const sEl = $('track-speed');
-    if (sEl) sEl.textContent = speed ? (speed * 3.6).toFixed(1) : '0.0';
-    const tEl = $('track-time');
-    if (tEl && state.trackStartTime) {
+    const d = $('track-dist'); if (d) d.textContent = fmtDist(state.totalDistance);
+    const p = $('track-points'); if (p) p.textContent = state.trackPoints.length;
+    const s = $('track-speed'); if (s) s.textContent = speed ? (speed * 3.6).toFixed(1) : '0.0';
+    const t = $('track-time');
+    if (t && state.trackStartTime) {
       let elapsed = Date.now() - state.trackStartTime - state.totalPausedMs;
       if (state.isPaused && state.trackPausedAt) elapsed -= (Date.now() - state.trackPausedAt);
       const m = Math.floor(elapsed / 60000);
-      const s = Math.floor((elapsed % 60000) / 1000);
-      tEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      const sec = Math.floor((elapsed % 60000) / 1000);
+      t.textContent = `${m}:${sec.toString().padStart(2, '0')}`;
     }
   }
 
   function pauseRecording() {
     if (!state.isRecording || state.isPaused) return;
-    state.isPaused = true;
-    state.trackPausedAt = Date.now();
+    state.isPaused = true; state.trackPausedAt = Date.now();
     renderTrackView();
   }
   function resumeRecording() {
@@ -2153,7 +1930,7 @@ a { color: var(--brand); }
     showModal(`
       <div class="modal-header">
         <div class="modal-title">💾 Save Track</div>
-        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
         <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:16px;font-size:13px;line-height:1.7;">
@@ -2184,10 +1961,10 @@ a { color: var(--brand); }
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
         <button class="btn-primary" id="modal-save">Save</button>
       </div>
-    `, { saveLabel: 'Save', onSave: async () => {
+    `, async () => {
       const name = $('f-name').value.trim();
       if (!name) { toast('Name required', true); return; }
       const { error } = await sb.from('paths').insert({
@@ -2205,11 +1982,11 @@ a { color: var(--brand); }
       toast('Track saved ✓');
       await loadAllData();
       renderTrackView();
-    }});
+    });
   }
 
   // ============================================================
-  // STATS
+  // STATS VIEW
   // ============================================================
   function renderStatsView() {
     const total = state.places.length + state.paths.length;
@@ -2217,7 +1994,6 @@ a { color: var(--brand); }
     const places = state.places.length - buildings;
     const paths = state.paths.length;
 
-    // Completeness: items with short_code + description + (amenities or photos)
     const complete = state.places.filter(p => p.short_code && p.description && ((p.amenities && p.amenities.length) || (p.photos && p.photos.length))).length;
     const pct = state.places.length ? Math.round((complete / state.places.length) * 100) : 0;
 
@@ -2233,32 +2009,20 @@ a { color: var(--brand); }
     });
 
     $('sheet-body').innerHTML = `
-      <div class="section-header" style="margin-top:16px;">Overview</div>
+      <div class="section-header"><span>Overview</span></div>
       <div class="stats-hero">
         <div class="stat-block">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div class="value">${total}</div>
-              <div class="label">Total items</div>
-            </div>
+            <div><div class="value">${total}</div><div class="label">Total items</div></div>
             <div class="progress-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
           </div>
         </div>
-        <div class="stat-block">
-          <div class="value">${buildings}</div>
-          <div class="label">Buildings</div>
-        </div>
-        <div class="stat-block">
-          <div class="value">${places}</div>
-          <div class="label">Places / POIs</div>
-        </div>
-        <div class="stat-block">
-          <div class="value">${paths}</div>
-          <div class="label">Walkways</div>
-        </div>
+        <div class="stat-block"><div class="value">${buildings}</div><div class="label">Buildings</div></div>
+        <div class="stat-block"><div class="value">${places}</div><div class="label">Places / POIs</div></div>
+        <div class="stat-block"><div class="value">${paths}</div><div class="label">Walkways</div></div>
       </div>
 
-      <div class="section-header">By category</div>
+      <div class="section-header"><span>By category</span></div>
       <div class="category-bars">
         ${CFG.categories.filter(c => catCounts[c.id] > 0).map(c => `
           <div class="cat-row">
@@ -2269,7 +2033,7 @@ a { color: var(--brand); }
         `).join('') || '<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:20px;">No data yet</div>'}
       </div>
 
-      <div class="section-header">Contributors</div>
+      <div class="section-header"><span>Contributors</span></div>
       <div class="items-grid">
         ${Object.entries(contributors).map(([email, count]) => `
           <div class="item-card" style="cursor:default;">
@@ -2282,7 +2046,7 @@ a { color: var(--brand); }
         `).join('')}
       </div>
 
-      <div class="section-header">Export</div>
+      <div class="section-header"><span>Export</span></div>
       <div style="display:flex;gap:10px;margin-bottom:16px;">
         <button class="btn-secondary" id="btn-export-json" style="flex:1;"><i class="fa-solid fa-code"></i> JSON</button>
         <button class="btn-secondary" id="btn-export-geojson" style="flex:1;"><i class="fa-solid fa-map"></i> GeoJSON</button>
@@ -2338,16 +2102,15 @@ a { color: var(--brand); }
   // ============================================================
   // MODAL SYSTEM
   // ============================================================
-  let modalSaveHandler = null;
-
-  function showModal(html, { saveLabel, onSave } = {}) {
+  function showModal(html, onSave) {
     $('modal').innerHTML = html;
     $('modal').classList.remove('hidden');
     $('modal-backdrop').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    bindToggles();
+    bindAmenityChips();
 
     if (onSave) {
-      modalSaveHandler = onSave;
       const btn = $('modal-save');
       if (btn) btn.onclick = async () => {
         btn.disabled = true;
@@ -2370,19 +2133,16 @@ a { color: var(--brand); }
     $('modal-backdrop').classList.add('hidden');
     $('modal').innerHTML = '';
     document.body.style.overflow = '';
-    modalSaveHandler = null;
   }
   window.closeModal = closeModal;
 
   $('modal-backdrop').addEventListener('click', closeModal);
 
   // ============================================================
-  // SHARED FORM PARTS
+  // FORM HELPERS
   // ============================================================
   function placeFormFields({ lat, lng, isBuilding }) {
-    const catOpts = CFG.categories.map(c =>
-      `<option value="${c.id}">${c.label}</option>`
-    ).join('');
+    const catOpts = CFG.categories.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
     const amenityChips = CFG.amenities.map(a =>
       `<button type="button" class="chip-toggle" data-amenity="${a.id}">${a.label}</button>`
     ).join('');
@@ -2390,7 +2150,7 @@ a { color: var(--brand); }
     return `
       <div class="form-field">
         <label>Name <span class="req">*</span></label>
-        <input type="text" id="f-name" placeholder="${isBuilding ? 'Block 27' : 'Block 27 Main Entrance'}" required autofocus>
+        <input type="text" id="f-name" placeholder="${isBuilding ? 'Block 27' : 'Block 27 Main Entrance'}" autofocus>
       </div>
       <div class="form-row">
         <div class="form-field">
@@ -2407,16 +2167,16 @@ a { color: var(--brand); }
         <input type="text" id="f-fullname" placeholder="Block 27 — CSE Department">
       </div>
       ${isBuilding ? `
-      <div class="form-row">
-        <div class="form-field">
-          <label>Height (m)</label>
-          <input type="number" id="f-height" value="12" min="1" max="200">
-        </div>
-        <div class="form-field">
-          <label>Floors</label>
-          <input type="number" id="f-floors" min="1" max="50" placeholder="3">
-        </div>
-      </div>` : ''}
+        <div class="form-row">
+          <div class="form-field">
+            <label>Height (m)</label>
+            <input type="number" id="f-height" value="12" min="1" max="200">
+          </div>
+          <div class="form-field">
+            <label>Floors</label>
+            <input type="number" id="f-floors" min="1" max="50" placeholder="3">
+          </div>
+        </div>` : ''}
       <div class="form-field">
         <label>Amenities</label>
         <div class="chip-group" id="amenity-group">${amenityChips}</div>
@@ -2435,14 +2195,14 @@ a { color: var(--brand); }
         <label>Description</label>
         <textarea id="f-desc" placeholder="Details…"></textarea>
       </div>
-      <div style="background:var(--surface-2);padding:12px;border-radius:10px;">
+      <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
         <div class="toggle-row">
           <span style="font-size:14px;">♿ Wheelchair accessible</span>
           <div class="toggle on" id="f-accessible"></div>
         </div>
       </div>
       <div style="margin-top:14px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;color:var(--text-muted);text-align:center;">
-        📍 Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}
+        📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}
       </div>
     `;
   }
@@ -2485,17 +2245,11 @@ a { color: var(--brand); }
     });
   }
 
-  // Show/hide toggles bound on every modal open
-  const origShowModal = showModal;
-  showModal = function(html, opts) {
-    origShowModal(html, opts);
-    bindToggles();
-    bindAmenityChips();
-  };
+  // ============================================================
+  // FAB WIRING
+  // ============================================================
+  $('fab-add').addEventListener('click', openAddMenu);
 
-  // ============================================================
-  // FABs
-  // ============================================================
   $('fab-locate').addEventListener('click', () => {
     if (!navigator.geolocation) { toast('No GPS', true); return; }
     navigator.geolocation.getCurrentPosition(
