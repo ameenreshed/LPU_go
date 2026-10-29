@@ -3,73 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#0a0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>LPU GO — Data Studio</title>
-<link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-/* ============================================================
-   ROOT / RESET
-   ============================================================ */
+/* ============ DESIGN TOKENS ============ */
 :root {
   --brand: #f59e0b;
-  --brand-dark: #d97706;
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-2: #0f172a;
-  --text: #f8fafc;
-  --muted: #94a3b8;
-  --border: rgba(255,255,255,0.1);
+  --brand-hover: #d97706;
   --success: #10b981;
   --danger: #ef4444;
-  --blue: #3b82f6;
-  --glass: rgba(30,41,59,0.9);
+  --info: #3b82f6;
+  --purple: #a855f7;
+
+  --bg: #0a0e14;
+  --surface: #151b23;
+  --surface-2: #1c242f;
+  --surface-3: #252f3d;
+  --surface-hover: #2d3849;
+
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.15);
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  --top-bar-h: 58px;
+  --bottom-nav-h: 68px;
 }
+
+/* ============ RESET ============ */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   margin: 0; padding: 0; height: 100%; overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--bg); color: var(--text);
   -webkit-font-smoothing: antialiased;
+  font-size: 15px; line-height: 1.5;
 }
 button, input, select, textarea { font-family: inherit; font-size: inherit; }
+button { cursor: pointer; border: none; background: none; color: inherit; }
+a { color: var(--brand); }
+.hidden { display: none !important; }
 
-/* ============================================================
-   SCREENS
-   ============================================================ */
-.screen { position: fixed; inset: 0; display: flex; flex-direction: column; }
-.screen.hidden { display: none; }
-
-/* ============================================================
-   LOGIN SCREEN
-   ============================================================ */
+/* ============ LOGIN ============ */
 #login-screen {
-  align-items: center; justify-content: center;
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
   padding: 20px;
-  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%);
+  background: radial-gradient(ellipse at top, #1c242f 0%, #0a0e14 60%);
+  z-index: 1000;
 }
 .login-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 32px 24px;
-  width: 100%; max-width: 380px;
+  width: 100%; max-width: 400px;
   display: flex; flex-direction: column; gap: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 .login-logo {
-  width: 72px; height: 72px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  border-radius: 20px;
+  width: 76px; height: 76px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-hover));
+  border-radius: 22px;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 28px; color: #000;
-  margin: 0 auto 4px;
-  box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+  font-weight: 900; font-size: 30px; color: #000;
+  margin: 0 auto 8px;
+  box-shadow: 0 12px 32px rgba(245,158,11,0.4);
 }
-.login-card h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
-.login-card p { margin: 0 0 8px; text-align: center; color: var(--muted); font-size: 13px; }
+.login-card h1 {
+  margin: 0; text-align: center;
+  font-size: 24px; font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.login-card .subtitle {
+  text-align: center; color: var(--text-muted);
+  font-size: 13px; margin: 0 0 12px;
+}
 .login-card input {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -78,336 +99,653 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   border-radius: 12px;
   font-size: 15px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
-.login-card input:focus { border-color: var(--brand); }
+.login-card input:focus { border-color: var(--brand); background: var(--surface-3); }
 .btn-primary {
   background: var(--brand); color: #000;
-  border: none; padding: 14px 20px;
-  border-radius: 12px;
+  padding: 14px 20px; border-radius: 12px;
   font-weight: 700; font-size: 15px;
-  cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s;
 }
-.btn-primary:hover { background: var(--brand-dark); }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.login-error { color: var(--danger); font-size: 13px; text-align: center; min-height: 18px; }
-.login-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; line-height: 1.4; }
+#login-error {
+  min-height: 18px; font-size: 13px;
+  color: var(--danger); text-align: center;
+}
+.login-hint {
+  font-size: 11px; color: var(--text-dim);
+  text-align: center; margin-top: 4px; line-height: 1.5;
+}
 
-/* ============================================================
-   MAIN SCREEN
-   ============================================================ */
+/* ============ MAIN LAYOUT ============ */
 #main-screen { position: fixed; inset: 0; }
 #map { position: absolute; inset: 0; z-index: 1; }
 
 /* Top bar */
 .top-bar {
   position: absolute;
-  top: calc(12px + var(--safe-top));
-  left: 12px; right: 12px;
-  z-index: 10;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  top: calc(10px + var(--safe-top));
+  left: 10px; right: 10px;
+  height: var(--top-bar-h);
+  z-index: 20;
+  background: rgba(21,27,35,0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 10px 14px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border-radius: 16px;
+  display: flex; align-items: center;
+  padding: 0 8px 0 14px;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
 }
-.brand-small { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; }
-.brand-small .logo {
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  border-radius: 9px;
+.brand-badge {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 800; font-size: 14px; flex-shrink: 0;
+}
+.brand-badge .mark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-hover));
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  color: #000; font-size: 13px; font-weight: 900;
+  color: #000; font-size: 12px; font-weight: 900;
 }
-.user-info { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
-.user-info span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.btn-logout {
-  width: 36px; height: 36px;
+.search-bar {
+  flex: 1; height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,0.3);
-  color: var(--text);
-  cursor: pointer;
+  display: flex; align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+.search-bar:focus-within { border-color: var(--brand); }
+.search-bar i { color: var(--text-dim); font-size: 14px; flex-shrink: 0; }
+.search-bar input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 14px;
+}
+.search-bar input::placeholder { color: var(--text-dim); }
+
+.user-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--info), var(--purple));
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px;
+  font-weight: 800; font-size: 15px;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+}
+.user-btn:active { transform: scale(0.95); }
+
+/* Mode indicator (shown during add mode) */
+.mode-indicator {
+  position: absolute;
+  top: calc(var(--top-bar-h) + 20px + var(--safe-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  background: var(--info);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 30px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 8px 24px rgba(59,130,246,0.4);
+  max-width: 90vw;
+  white-space: nowrap;
+}
+.mode-indicator button {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 12px;
 }
 
-/* Floating action buttons */
-.fab-group {
-  position: absolute;
+/* FAB stack */
+.fab-stack {
+  position: fixed;
   right: 12px;
-  bottom: calc(180px + var(--safe-bottom));
-  z-index: 15;
+  bottom: calc(var(--bottom-nav-h) + 16px + var(--safe-bottom));
+  z-index: 18;
   display: flex; flex-direction: column; gap: 10px;
 }
 .fab {
-  width: 52px; height: 52px;
+  width: 48px; height: 48px;
   border-radius: 14px;
+  background: var(--surface);
   border: 1px solid var(--border);
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   color: var(--text);
-  cursor: pointer;
-  font-size: 20px;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  transition: transform 0.15s, background 0.15s;
+  font-size: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  transition: transform 0.12s, background 0.12s;
 }
-.fab:active { transform: scale(0.92); }
+.fab:active { transform: scale(0.9); }
 .fab.active { background: var(--brand); color: #000; border-color: var(--brand); }
 
-/* ============================================================
-   PANEL
-   ============================================================ */
-.panel {
-  position: absolute;
-  left: 12px; right: 12px;
-  bottom: calc(12px + var(--safe-bottom));
-  z-index: 12;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border);
-  border-radius: 20px 20px 16px 16px;
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
-  max-height: 65vh;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-.panel-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 8px auto 4px; flex-shrink: 0; }
-
-/* Tabs */
-.tabs {
+/* Bottom nav (mobile) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(var(--bottom-nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  z-index: 20;
+  background: rgba(21,27,35,0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border);
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 4px;
-  padding: 8px;
-  flex-shrink: 0;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
 }
-.tab {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  padding: 10px 4px;
-  border-radius: 10px;
+.nav-btn {
+  height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  color: var(--text-dim);
+  font-size: 10px;
   font-weight: 600;
-  font-size: 11px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  letter-spacing: 0.02em;
+  transition: color 0.12s;
+  position: relative;
 }
-.tab i { font-size: 15px; }
-.tab.active { background: var(--brand); color: #000; }
+.nav-btn i { font-size: 18px; }
+.nav-btn.active { color: var(--brand); }
+.nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 50%; transform: translateX(-50%);
+  width: 32px; height: 3px;
+  background: var(--brand);
+  border-radius: 2px;
+}
+.nav-btn.add-btn {
+  color: #000;
+}
+.nav-btn.add-btn i {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: var(--brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 6px 20px rgba(245,158,11,0.4);
+  color: #000;
+}
+.nav-btn.add-btn i:active { transform: scale(0.92); }
 
-/* Mode hint */
-.mode-hint {
-  background: rgba(59,130,246,0.15);
-  border: 1px solid rgba(59,130,246,0.3);
-  color: #93c5fd;
-  font-size: 12px;
-  padding: 8px 12px;
-  margin: 0 8px 8px;
-  border-radius: 8px;
-  text-align: center;
+/* ============ SHEET (list / track / stats) ============ */
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: calc(85vh - var(--safe-bottom));
+  z-index: 22;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sheet.open { transform: translateY(0); }
+.sheet-handle {
+  width: 40px; height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  margin: 10px auto 6px;
   flex-shrink: 0;
 }
-
-/* Stats row */
-.stats {
-  display: flex; gap: 8px;
-  padding: 0 8px 8px;
-  font-size: 12px; color: var(--muted);
-  flex-shrink: 0;
-}
-.stats span {
-  background: rgba(0,0,0,0.3);
-  padding: 6px 10px;
-  border-radius: 6px;
-  flex: 1; text-align: center;
-}
-.stats b { color: var(--text); }
-
-/* Items list */
-.list {
-  overflow-y: auto;
-  padding: 0 8px 12px;
-  flex: 1;
-  display: flex; flex-direction: column; gap: 6px;
+.sheet-body {
+  flex: 1; overflow-y: auto;
+  padding: 0 16px 16px;
   -webkit-overflow-scrolling: touch;
 }
-.list-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; }
 
-.item {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex; align-items: center; gap: 10px;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-.item:hover { border-color: var(--brand); background: rgba(245,158,11,0.05); }
-.item-icon {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.item-info { flex: 1; min-width: 0; }
-.item-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.item-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.item-btn {
-  background: transparent; border: none; color: var(--muted);
-  cursor: pointer; padding: 6px; font-size: 13px;
-}
-.item-btn:hover { color: var(--brand); }
-.item-btn.danger:hover { color: var(--danger); }
-
-/* ============================================================
-   TRACK UI
-   ============================================================ */
-.track-panel {
-  display: none;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  flex: 1;
-  overflow-y: auto;
-}
-.track-panel.active { display: flex; }
-
-.track-status {
-  text-align: center;
-  padding: 16px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-.track-status .big {
-  font-size: 28px;
-  font-weight: 800;
-  font-family: 'Space Grotesk', monospace;
-  color: var(--brand);
-}
-.track-status .label {
+/* Section headers */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 16px 0 10px;
   font-size: 12px;
-  color: var(--muted);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 4px;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.section-header .count {
+  background: var(--surface-3);
+  color: var(--text);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
 }
 
-.accuracy-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: rgba(0,0,0,0.3);
-  border-radius: 8px;
-  font-size: 13px;
+/* Filter chips */
+.filter-chips {
+  display: flex; gap: 6px;
+  overflow-x: auto;
+  padding: 0 0 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.accuracy-dot {
-  width: 12px; height: 12px;
-  border-radius: 50%;
+.filter-chips::-webkit-scrollbar { display: none; }
+.chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.chip.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #000;
+}
+.chip .badge {
+  display: inline-block;
+  background: rgba(0,0,0,0.2);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 4px;
+  font-size: 10px;
+}
+.chip.active .badge { background: rgba(0,0,0,0.3); color: #000; }
+
+/* Item cards */
+.items-grid {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.item-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex; gap: 12px;
+  align-items: center;
+  transition: border-color 0.12s, background 0.12s, transform 0.1s;
+  cursor: pointer;
+}
+.item-card:hover { border-color: var(--border-strong); background: var(--surface-3); }
+.item-card:active { transform: scale(0.99); }
+
+.item-thumb {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--surface-3);
+}
+.item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.item-main { flex: 1; min-width: 0; }
+.item-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.item-code {
+  background: var(--surface-3);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
   flex-shrink: 0;
 }
-.accuracy-dot.good { background: var(--success); box-shadow: 0 0 8px var(--success); }
-.accuracy-dot.ok { background: var(--brand); box-shadow: 0 0 8px var(--brand); }
-.accuracy-dot.bad { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+.item-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.item-actions {
+  display: flex; gap: 2px; flex-shrink: 0;
+}
+.icon-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: background 0.12s, color 0.12s;
+}
+.icon-btn:hover { background: var(--surface-hover); color: var(--text); }
+.icon-btn.danger:hover { color: var(--danger); }
 
-.track-stats-grid {
+/* Empty state */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+}
+.empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+.empty-state h3 {
+  font-size: 15px; font-weight: 700; margin: 0 0 4px;
+  color: var(--text);
+}
+.empty-state p {
+  font-size: 13px; color: var(--text-muted);
+  margin: 0; line-height: 1.5;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+  height: 68px;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Track UI */
+.track-hero {
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.08));
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  margin: 16px 0;
+}
+.track-hero .distance {
+  font-size: 42px; font-weight: 900;
+  color: var(--success);
+  font-family: 'Space Grotesk', monospace;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.track-hero .distance-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 600;
+}
+.track-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
+  margin-bottom: 16px;
 }
-.track-stat {
-  background: rgba(0,0,0,0.3);
-  border-radius: 8px;
-  padding: 10px;
+.metric-card {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 12px 8px;
   text-align: center;
 }
-.track-stat .value { font-size: 16px; font-weight: 700; }
-.track-stat .label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-
-.track-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.btn-record {
-  grid-column: span 2;
-  background: var(--success);
-  color: #fff;
-  border: none;
-  padding: 16px;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 4px 16px rgba(16,185,129,0.4);
-}
-.btn-record.recording { background: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.4); }
-.btn-record:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid var(--border);
+.metric-card .value {
+  font-size: 16px; font-weight: 800;
   color: var(--text);
-  padding: 12px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
 }
-.btn-secondary:hover { border-color: var(--muted); }
-.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ============================================================
-   MODAL
-   ============================================================ */
-.modal {
-  position: fixed; inset: 0;
-  z-index: 100;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 12px;
-  transition: opacity 0.2s;
-}
-.modal.hidden { opacity: 0; pointer-events: none; }
-.modal-content {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px 20px 16px 16px;
-  padding: 20px;
-  width: 100%; max-width: 500px;
-  max-height: 85vh;
-  overflow-y: auto;
-  display: flex; flex-direction: column; gap: 14px;
-  transform: translateY(0);
-  transition: transform 0.2s;
-}
-.modal.hidden .modal-content { transform: translateY(20px); }
-.modal-content h2 { margin: 0; font-size: 18px; font-weight: 700; }
-
-.form-field { display: flex; flex-direction: column; gap: 6px; }
-.form-field label {
-  font-size: 12px; font-weight: 600;
-  color: var(--muted);
+.metric-card .label {
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-top: 2px;
 }
-.form-field input,
+.accuracy-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.accuracy-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.accuracy-dot.good { background: var(--success); box-shadow: 0 0 10px var(--success); }
+.accuracy-dot.ok   { background: var(--brand); box-shadow: 0 0 10px var(--brand); }
+.accuracy-dot.bad  { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+
+.btn-record {
+  width: 100%;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--success);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 24px rgba(16,185,129,0.4);
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-record:active { transform: scale(0.98); }
+.btn-record.recording {
+  background: var(--danger);
+  box-shadow: 0 8px 24px rgba(239,68,68,0.4);
+}
+.btn-record:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.track-controls {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.btn-secondary {
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.btn-secondary:hover { background: var(--surface-3); border-color: var(--border-strong); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-danger-outline {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(239,68,68,0.4);
+  color: #fca5a5;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 10px;
+}
+.btn-danger-outline:hover { background: rgba(239,68,68,0.1); }
+
+/* Stats UI */
+.stats-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+.stat-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.stat-block .value {
+  font-size: 28px; font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+}
+.stat-block .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.progress-ring {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(var(--brand) var(--pct, 0%), var(--surface-3) 0);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.progress-ring::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--surface-2);
+}
+.progress-ring span {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.category-bars { margin-top: 16px; }
+.cat-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+}
+.cat-row .label {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+}
+.cat-row .bar-track {
+  flex: 2;
+  height: 8px;
+  background: var(--surface-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cat-row .bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.cat-row .count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ============ MODALS ============ */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 100;
+  animation: fade-in 0.2s ease-out;
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  position: fixed;
+  z-index: 101;
+  left: 0; right: 0; bottom: 0;
+  max-height: 90vh;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  display: flex; flex-direction: column;
+  animation: slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -12px 40px rgba(0,0,0,0.6);
+}
+@keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.modal-title {
+  font-size: 17px; font-weight: 800;
+  display: flex; align-items: center; gap: 10px;
+}
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.modal-close:hover { background: var(--surface-3); color: var(--text); }
+
+.modal-body {
+  flex: 1; overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+.modal-footer {
+  padding: 16px 20px calc(16px + var(--safe-bottom));
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.modal-footer .btn-primary { flex: 1; }
+.modal-footer .btn-cancel {
+  flex: 0 0 40%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Form */
+.form-section {
+  margin-bottom: 20px;
+}
+.form-section:last-child { margin-bottom: 0; }
+.form-section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.form-field {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 14px;
+}
+.form-field:last-child { margin-bottom: 0; }
+.form-field label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.form-field label .req { color: var(--danger); }
+.form-field input[type="text"],
+.form-field input[type="email"],
+.form-field input[type="tel"],
+.form-field input[type="number"],
 .form-field select,
 .form-field textarea {
   background: var(--surface-2);
@@ -418,261 +756,307 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
   font-size: 15px;
   outline: none;
   width: 100%;
+  transition: border-color 0.15s, background 0.15s;
 }
 .form-field input:focus,
 .form-field select:focus,
-.form-field textarea:focus { border-color: var(--brand); }
-.form-field textarea { resize: vertical; min-height: 60px; font-family: inherit; }
-
-.modal-buttons {
+.form-field textarea:focus {
+  border-color: var(--brand);
+  background: var(--surface-3);
+}
+.form-field textarea {
+  resize: vertical;
+  min-height: 70px;
+  font-family: inherit;
+}
+.form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 6px;
+  gap: 12px;
 }
-.btn-cancel {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.btn-cancel:hover { border-color: var(--muted); }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
+/* Multi-select chips */
+.chip-group {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 4px 0;
+}
+.chip-toggle {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.chip-toggle.selected {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #000;
+}
+
+/* Toggle switch */
+.toggle-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.toggle {
+  position: relative;
+  width: 46px; height: 26px;
+  background: var(--surface-3);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  background: var(--text);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle.on { background: var(--success); }
+.toggle.on::after { transform: translateX(20px); background: #fff; }
+
+/* Photo grid */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.photo-cell {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-cell img { width: 100%; height: 100%; object-fit: cover; }
+.photo-add {
+  border: 2px dashed var(--border-strong);
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 24px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.photo-add:hover { border-color: var(--brand); color: var(--brand); }
+.photo-remove {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+
+/* Quick actions sheet */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.quick-action {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 12px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.quick-action:active { transform: scale(0.96); }
+.quick-action:hover { border-color: var(--brand); background: var(--surface-3); }
+.quick-action .icon-wrap {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.quick-action .label {
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+}
+.quick-action .sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Toast */
 #toast {
   position: fixed;
-  bottom: calc(100px + var(--safe-bottom));
   left: 50%;
+  bottom: calc(var(--bottom-nav-h) + 90px + var(--safe-bottom));
   transform: translateX(-50%) translateY(100px);
+  z-index: 9999;
   background: var(--brand);
   color: #000;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 700;
   font-size: 13px;
-  z-index: 999;
-  pointer-events: none;
-  transition: transform 0.25s;
   max-width: 90vw;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 #toast.error { background: var(--danger); color: #fff; }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
+/* ============ RESPONSIVE: TABLET / DESKTOP ============ */
 @media (min-width: 768px) {
-  .panel {
-    left: 12px; right: auto;
-    top: calc(80px + var(--safe-top));
-    bottom: 12px;
-    width: 400px;
-    max-height: none;
-    border-radius: 16px;
+  .top-bar {
+    top: calc(16px + var(--safe-top));
+    left: 16px; right: 16px;
+    height: 64px;
   }
-  .panel-handle { display: none; }
-  .tabs { padding-top: 12px; }
-  .tab { flex-direction: row; gap: 6px; padding: 12px 8px; font-size: 12px; }
-  .fab-group { bottom: calc(24px + var(--safe-bottom)); right: 24px; }
-  .modal { align-items: center; }
-  .modal-content { border-radius: 20px; }
-}
-@media (min-width: 1200px) {
-  .panel { width: 440px; }
+  .sheet {
+    left: 16px; right: auto;
+    top: calc(64px + 32px + var(--safe-top));
+    bottom: 16px;
+    height: auto;
+    width: 420px;
+    transform: none !important;
+    border-radius: 20px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sheet-handle { display: none; }
+  .sheet-body { padding-top: 16px; }
+  .bottom-nav { display: none; }
+  .fab-stack {
+    bottom: calc(16px + var(--safe-bottom));
+    right: 16px;
+  }
+  .modal {
+    left: 50%; bottom: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 520px;
+    max-height: 85vh;
+    border-radius: 20px;
+    animation: modal-pop 0.24s ease-out;
+  }
+  @keyframes modal-pop {
+    from { opacity: 0; transform: translate(-50%, -48%); }
+    to   { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  #toast { bottom: 24px; }
+  .mode-indicator { top: calc(64px + 34px + var(--safe-top)); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+@media (min-width: 1200px) {
+  .sheet { width: 460px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     LOGIN SCREEN
-     ============================================================ -->
-<div id="login-screen" class="screen">
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
   <div class="login-card">
     <div class="login-logo">LG</div>
     <h1>LPU GO Data Studio</h1>
-    <p>Team data collection tool</p>
+    <p class="subtitle">Team data collection tool</p>
     <form id="login-form">
-      <input id="login-email" type="email" placeholder="Email" autocomplete="email" required style="margin-bottom:10px;">
-      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required style="margin-bottom:14px;">
+      <input id="login-email" type="email" placeholder="Email" autocomplete="email" required style="margin-bottom:10px;width:100%;">
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required style="margin-bottom:16px;width:100%;">
       <button type="submit" class="btn-primary" id="btn-login" style="width:100%;">Sign In</button>
     </form>
-    <div id="login-error" class="login-error"></div>
+    <div id="login-error"></div>
     <div class="login-hint">Ask your team lead for login credentials</div>
   </div>
 </div>
 
-<!-- ============================================================
-     MAIN SCREEN
-     ============================================================ -->
-<div id="main-screen" class="screen hidden">
+<!-- ============ MAIN ============ -->
+<div id="main-screen" class="hidden">
   <div id="map"></div>
 
   <!-- Top bar -->
   <header class="top-bar">
-    <div class="brand-small">
-      <div class="logo">LG</div>
-      <span>LPU GO</span>
+    <div class="brand-badge">
+      <div class="mark">LG</div>
     </div>
-    <div class="user-info">
-      <span id="user-email">—</span>
-      <button class="btn-logout" id="btn-logout" title="Sign out">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-      </button>
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="search-input" placeholder="Search buildings, places…" autocomplete="off">
     </div>
+    <button class="user-btn" id="user-btn" title="Account">
+      <span id="user-initial">U</span>
+    </button>
   </header>
 
-  <!-- Floating buttons -->
-  <div class="fab-group">
-    <button class="fab" id="fab-locate" title="My location">
-      <i class="fa-solid fa-location-crosshairs"></i>
-    </button>
-    <button class="fab active" id="fab-3d" title="Toggle 3D">
-      <i class="fa-solid fa-cube"></i>
-    </button>
-    <button class="fab" id="fab-refresh" title="Refresh">
-      <i class="fa-solid fa-rotate"></i>
-    </button>
+  <!-- Mode indicator -->
+  <div class="mode-indicator hidden" id="mode-indicator">
+    <i class="fa-solid fa-location-dot"></i>
+    <span id="mode-text">Tap map to add place</span>
+    <button id="mode-cancel"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
-  <!-- Panel -->
-  <aside class="panel">
-    <div class="panel-handle"></div>
-
-    <div class="tabs">
-      <button class="tab active" data-mode="point">
-        <i class="fa-solid fa-location-dot"></i>
-        <span>Places</span>
-      </button>
-      <button class="tab" data-mode="path">
-        <i class="fa-solid fa-route"></i>
-        <span>Paths</span>
-      </button>
-      <button class="tab" data-mode="polygon">
-        <i class="fa-solid fa-building"></i>
-        <span>Buildings</span>
-      </button>
-      <button class="tab" data-mode="track">
-        <i class="fa-solid fa-person-walking"></i>
-        <span>Track</span>
-      </button>
-    </div>
-
-    <div class="mode-hint" id="mode-hint">
-      Tap on the map to add a place
-    </div>
-
-    <!-- ===== TRACK PANEL ===== -->
-    <div class="track-panel" id="track-panel">
-      <div class="track-status">
-        <div class="big" id="track-distance">0 m</div>
-        <div class="label">Distance walked</div>
-      </div>
-
-      <div class="accuracy-indicator">
-        <div class="accuracy-dot bad" id="accuracy-dot"></div>
-        <div style="flex:1;">GPS accuracy: <b id="accuracy-text">—</b></div>
-      </div>
-
-      <div class="track-stats-grid">
-        <div class="track-stat">
-          <div class="value" id="track-time">0:00</div>
-          <div class="label">Time</div>
-        </div>
-        <div class="track-stat">
-          <div class="value" id="track-points">0</div>
-          <div class="label">Points</div>
-        </div>
-        <div class="track-stat">
-          <div class="value" id="track-speed">0.0</div>
-          <div class="label">km/h</div>
-        </div>
-      </div>
-
-      <div class="track-buttons">
-        <button class="btn-record" id="btn-record">
-          <i class="fa-solid fa-circle"></i> Start Recording
-        </button>
-        <button class="btn-secondary" id="btn-pause" disabled>
-          <i class="fa-solid fa-pause"></i> Pause
-        </button>
-        <button class="btn-secondary" id="btn-stop" disabled>
-          <i class="fa-solid fa-stop"></i> Stop & Save
-        </button>
-      </div>
-
-      <button class="btn-secondary" id="btn-discard" style="display:none;">
-        <i class="fa-solid fa-trash"></i> Discard Track
-      </button>
-
-      <div class="hint" style="font-size:11px;color:var(--muted);text-align:center;line-height:1.4;">
-        Walk along the path. Points with poor GPS accuracy are automatically filtered.
-        Double-check the blue line before saving.
-      </div>
-    </div>
-
-    <!-- ===== NORMAL LIST ===== -->
-    <div class="list" id="items-list">
-      <div class="list-empty">No items yet — start by clicking the map</div>
-    </div>
-  </aside>
-</div>
-
-<!-- ============================================================
-     SAVE MODAL
-     ============================================================ -->
-<div id="save-modal" class="modal hidden">
-  <div class="modal-content">
-    <h2 id="save-modal-title">Save Item</h2>
-    <form id="save-form">
-      <div id="save-form-fields"></div>
-      <div class="modal-buttons">
-        <button type="button" class="btn-cancel" id="btn-cancel-save">Cancel</button>
-        <button type="submit" class="btn-primary" id="btn-confirm-save">Save</button>
-      </div>
-    </form>
+  <!-- FABs -->
+  <div class="fab-stack">
+    <button class="fab" id="fab-locate" title="My location"><i class="fa-solid fa-location-crosshairs"></i></button>
+    <button class="fab active" id="fab-3d" title="Toggle 3D"><i class="fa-solid fa-cube"></i></button>
   </div>
+
+  <!-- Sheet (list / track / stats) -->
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="map">
+      <i class="fa-solid fa-map"></i><span>Map</span>
+    </button>
+    <button class="nav-btn" data-view="list">
+      <i class="fa-solid fa-list"></i><span>List</span>
+    </button>
+    <button class="nav-btn add-btn" data-view="add" style="background:none;">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="nav-btn" data-view="track">
+      <i class="fa-solid fa-person-walking"></i><span>Track</span>
+    </button>
+    <button class="nav-btn" data-view="stats">
+      <i class="fa-solid fa-chart-pie"></i><span>Stats</span>
+    </button>
+  </nav>
 </div>
 
-<!-- ============================================================
-     TOAST
-     ============================================================ -->
+<!-- Modals -->
+<div class="modal-backdrop hidden" id="modal-backdrop"></div>
+<div class="modal hidden" id="modal"></div>
+
+<!-- Toast -->
 <div id="toast"></div>
 
-<!-- ============================================================
-     CDN SCRIPTS
-     ============================================================ -->
-<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<!-- ============ SCRIPTS ============ -->
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <script src="config.js"></script>
 
 <script>
-/* ============================================================
-   LPU GO — Data Collection App v2
-   ============================================================ */
 (function() {
   'use strict';
 
   const CFG = window.LPU_CONFIG;
-  if (!CFG) { alert('config.js not loaded!'); return; }
+  if (!CFG) { alert('config.js missing!'); return; }
 
-  if (CFG.supabaseUrl.includes('YOUR_PROJECT_URL') || CFG.supabaseKey.includes('YOUR_ANON_KEY')) {
-    document.getElementById('login-error').textContent =
-      '⚠️ Edit config.js with your Supabase URL and key';
-    document.getElementById('login-error').style.color = '#f59e0b';
+  if (CFG.supabaseUrl.includes('YOUR_PROJECT') || CFG.supabaseKey.includes('YOUR_ANON')) {
+    document.getElementById('login-error').innerHTML = '<span style="color:var(--brand);">⚠️ Edit config.js — add Supabase URL & key</span>';
   }
 
   const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
@@ -684,35 +1068,33 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     user: null,
     places: [],
     paths: [],
-    drawMode: 'point',           // 'point' | 'path' | 'polygon' | 'track'
+    activeView: 'map',
+    activeCategory: 'all',
+    searchQuery: '',
+    drawMode: null,           // null | 'place' | 'building' | 'path'
     pendingVertices: [],
     pendingMarkers: [],
     is3D: true,
     map: null,
-    saving: false,
+    loading: true,
 
-    // Track recording
+    // Track
     isRecording: false,
     isPaused: false,
-    trackPoints: [],              // [{lng, lat, accuracy, timestamp}]
-    watchId: null,
+    trackPoints: [],
+    totalDistance: 0,
     trackStartTime: null,
     trackPausedAt: null,
     totalPausedMs: 0,
-    currentPosMarker: null,
-    accuracySource: null,
-    trackLineSource: null,
+    watchId: null,
     lastAcceptedPoint: null,
-    totalDistance: 0,
+    currentPosMarker: null,
   };
 
   // ============================================================
-  // DOM HELPERS
+  // UTILS
   // ============================================================
-  const $ = (id) => document.getElementById(id);
-  const show = (el) => el.classList.remove('hidden');
-  const hide = (el) => el.classList.add('hidden');
-
+  const $ = id => document.getElementById(id);
   let toastTimer;
   function toast(msg, isError) {
     const el = $('toast');
@@ -720,32 +1102,39 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     el.classList.toggle('error', !!isError);
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
   }
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c =>
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
     );
   }
+  function catInfo(id) {
+    return CFG.categories.find(c => c.id === id) || CFG.categories[CFG.categories.length - 1];
+  }
+  function fmtDist(m) {
+    return m > 1000 ? (m / 1000).toFixed(2) + ' km' : Math.round(m) + ' m';
+  }
 
   // ============================================================
-  // LOGIN
+  // AUTH
   // ============================================================
   async function checkSession() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) onLogin(session.user);
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) onLogin(session.user);
+    } catch (e) { console.warn(e); }
   }
 
   function onLogin(user) {
     state.user = user;
-    $('user-email').textContent = user.email || 'user';
-    hide($('login-screen'));
-    show($('main-screen'));
+    $('user-initial').textContent = (user.email || 'U').charAt(0).toUpperCase();
+    $('login-screen').classList.add('hidden');
+    $('main-screen').classList.remove('hidden');
     initMap();
   }
 
-  $('login-form').addEventListener('submit', async (e) => {
+  $('login-form').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('login-email').value.trim();
     const password = $('login-password').value;
@@ -766,15 +1155,15 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     }
   });
 
-  $('btn-logout').addEventListener('click', async () => {
-    if (!confirm('Sign out?')) return;
-    stopWatching();
-    await sb.auth.signOut();
-    location.reload();
+  $('user-btn').addEventListener('click', () => {
+    if (confirm('Sign out?')) {
+      stopWatching();
+      sb.auth.signOut().then(() => location.reload());
+    }
   });
 
   // ============================================================
-  // MAP INIT
+  // MAP
   // ============================================================
   function initMap() {
     if (state.map) return;
@@ -784,7 +1173,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       center: CFG.center,
       zoom: CFG.zoom,
-      pitch: 50,
+      pitch: 45,
       bearing: -15,
       antialias: true,
     });
@@ -798,17 +1187,14 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     });
 
     state.map.on('click', onMapClick);
-    state.map.on('dblclick', (e) => {
-      if (state.drawMode === 'path' || state.drawMode === 'polygon') {
+    state.map.on('dblclick', e => {
+      if (state.drawMode === 'building' || state.drawMode === 'path') {
         e.preventDefault();
         finishDrawing();
       }
     });
   }
 
-  // ============================================================
-  // LAYERS
-  // ============================================================
   function setupLayers() {
     const map = state.map;
 
@@ -817,7 +1203,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     map.addLayer({
       id: 'paths-casing', type: 'line', source: 'paths-src',
       layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': '#000', 'line-width': 8, 'line-opacity': 0.4 },
+      paint: { 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.5 },
     });
     map.addLayer({
       id: 'paths-line', type: 'line', source: 'paths-src',
@@ -825,20 +1211,20 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       paint: { 'line-color': '#10b981', 'line-width': 4 },
     });
 
-    // Footprints (3D)
+    // Footprints
     map.addSource('footprints-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({
       id: 'footprints-3d', type: 'fill-extrusion', source: 'footprints-src',
       paint: {
         'fill-extrusion-color': '#f59e0b',
-        'fill-extrusion-height': ['coalesce', ['get', 'height'], 10],
+        'fill-extrusion-height': ['coalesce', ['get', 'height'], 12],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.7,
+        'fill-extrusion-opacity': 0.75,
         'fill-extrusion-vertical-gradient': true,
       },
     });
 
-    // Temp drawing line
+    // Temp draw line
     map.addSource('temp-line', {
       type: 'geojson',
       data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
@@ -848,7 +1234,7 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-dasharray': [2, 2] },
     });
 
-    // Live track
+    // Track
     map.addSource('track-src', {
       type: 'geojson',
       data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
@@ -872,48 +1258,33 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       id: 'accuracy-line', type: 'line', source: 'accuracy-src',
       paint: { 'line-color': '#3b82f6', 'line-width': 1, 'line-opacity': 0.5 },
     });
-
-    state.trackLineSource = map.getSource('track-src');
-    state.accuracySource = map.getSource('accuracy-src');
   }
 
   // ============================================================
   // MAP CLICK
   // ============================================================
   function onMapClick(e) {
-    if (state.drawMode === 'track') return; // Track mode uses GPS, not taps
-
-    const lng = e.lngLat.lng;
-    const lat = e.lngLat.lat;
-
-    if (state.drawMode === 'point') {
-      openPlaceModal(lat, lng);
-    } else if (state.drawMode === 'path' || state.drawMode === 'polygon') {
-      state.pendingVertices.push([lng, lat]);
-      addPendingVertexMarker(lng, lat);
+    if (state.drawMode === 'place') {
+      openPlaceForm(e.lngLat.lat, e.lngLat.lng);
+    } else if (state.drawMode === 'building' || state.drawMode === 'path') {
+      state.pendingVertices.push([e.lngLat.lng, e.lngLat.lat]);
+      addPendingMarker(e.lngLat.lng, e.lngLat.lat);
       updateTempLine();
     }
   }
 
-  function addPendingVertexMarker(lng, lat) {
+  function addPendingMarker(lng, lat) {
     const el = document.createElement('div');
-    el.style.cssText = `
-      width:14px;height:14px;border-radius:50%;
-      background:#3b82f6;border:2px solid #fff;
-      box-shadow:0 2px 8px rgba(0,0,0,0.5);
-    `;
+    el.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#3b82f6;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);';
     const m = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
     state.pendingMarkers.push(m);
   }
 
   function updateTempLine() {
     if (!state.map.getSource('temp-line')) return;
-    const coords = state.pendingVertices.slice();
-    if (state.drawMode === 'polygon' && coords.length >= 3) coords.push(coords[0]);
-    state.map.getSource('temp-line').setData({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: coords },
-    });
+    const c = state.pendingVertices.slice();
+    if (state.drawMode === 'building' && c.length >= 3) c.push(c[0]);
+    state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: c } });
   }
 
   function clearPending() {
@@ -921,74 +1292,743 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     state.pendingMarkers.forEach(m => m.remove());
     state.pendingMarkers = [];
     if (state.map.getSource('temp-line')) {
-      state.map.getSource('temp-line').setData({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: [] },
-      });
+      state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
     }
   }
 
   function finishDrawing() {
-    if (state.pendingVertices.length < 2) { clearPending(); return; }
-    if (state.drawMode === 'path') {
-      openPathModal(state.pendingVertices.slice());
-    } else if (state.drawMode === 'polygon') {
-      if (state.pendingVertices.length < 3) {
-        toast('Need at least 3 points for a building', true);
-        return;
-      }
-      openBuildingModal(state.pendingVertices.slice());
+    if (state.drawMode === 'path' && state.pendingVertices.length >= 2) {
+      openPathForm(state.pendingVertices.slice());
+    } else if (state.drawMode === 'building' && state.pendingVertices.length >= 3) {
+      openBuildingForm(state.pendingVertices.slice());
+    } else {
+      toast('Need more points', true);
     }
   }
 
   // ============================================================
-  // TRACK RECORDING — LIVE GPS
+  // LOAD DATA
   // ============================================================
-  function startWatching() {
-    if (!navigator.geolocation) {
-      toast('GPS not supported on this device', true);
-      return false;
+  async function loadAllData() {
+    try {
+      const [places, paths] = await Promise.all([
+        sb.from('places').select('*').order('created_at', { ascending: false }),
+        sb.from('paths').select('*').order('created_at', { ascending: false }),
+      ]);
+      if (places.error) throw places.error;
+      if (paths.error) throw paths.error;
+
+      state.places = places.data || [];
+      state.paths = paths.data || [];
+      state.loading = false;
+
+      renderPaths();
+      renderFootprints();
+      renderMarkers();
+      renderCurrentView();
+    } catch (err) {
+      console.error(err);
+      state.loading = false;
+      toast('Load failed: ' + err.message, true);
+      renderCurrentView();
     }
+  }
+
+  let placeMarkers = [];
+  function renderMarkers() {
+    placeMarkers.forEach(m => m.remove());
+    placeMarkers = [];
+    state.places.forEach(p => {
+      const cat = catInfo(p.category);
+      const el = document.createElement('div');
+      el.style.cssText = `width:32px;height:32px;border-radius:50%;background:${cat.color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;`;
+      el.innerHTML = `<i class="fa-solid ${cat.icon}"></i>`;
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat([p.lng, p.lat])
+        .setPopup(new maplibregl.Popup({ offset: 22, closeButton: false }).setHTML(
+          `<div style="font-family:inherit;min-width:160px;">
+            <div style="color:${cat.color};font-weight:800;font-size:14px;">${esc(p.name)}</div>
+            <div style="color:#94a3b8;font-size:12px;margin-top:3px;">${cat.label}${p.short_code ? ' · '+esc(p.short_code) : ''}</div>
+          </div>`
+        ))
+        .addTo(state.map);
+      placeMarkers.push(m);
+    });
+  }
+
+  function renderPaths() {
+    if (!state.map.getSource('paths-src')) return;
+    const features = state.paths.filter(p => p.geojson).map(p => ({
+      type: 'Feature',
+      properties: { id: p.id, name: p.name },
+      geometry: p.geojson,
+    }));
+    state.map.getSource('paths-src').setData({ type: 'FeatureCollection', features });
+  }
+
+  function renderFootprints() {
+    if (!state.map.getSource('footprints-src')) return;
+    const features = state.places.filter(p => p.footprint_geojson).map(p => ({
+      type: 'Feature',
+      properties: { height: Number(p.height_m) || 12 },
+      geometry: p.footprint_geojson,
+    }));
+    state.map.getSource('footprints-src').setData({ type: 'FeatureCollection', features });
+  }
+
+  // ============================================================
+  // BOTTOM NAV
+  // ============================================================
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.dataset.view;
+      if (view === 'add') {
+        openAddMenu();
+        return;
+      }
+      if (view === 'map') {
+        closeSheet();
+        setActiveNav('map');
+        return;
+      }
+      setActiveNav(view);
+      state.activeView = view;
+      renderCurrentView();
+      openSheet();
+    });
+  });
+
+  function setActiveNav(view) {
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === view);
+    });
+    state.activeView = view;
+  }
+
+  function openSheet() {
+    $('sheet').classList.add('open');
+  }
+  function closeSheet() {
+    $('sheet').classList.remove('open');
+    setActiveNav('map');
+    state.activeView = 'map';
+  }
+
+  // ============================================================
+  // RENDER: current view
+  // ============================================================
+  function renderCurrentView() {
+    if (state.loading) {
+      $('sheet-body').innerHTML = `
+        <div class="section-header"><span>Loading…</span></div>
+        <div class="items-grid">
+          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+        </div>`;
+      return;
+    }
+    if (state.activeView === 'list') renderListView();
+    else if (state.activeView === 'track') renderTrackView();
+    else if (state.activeView === 'stats') renderStatsView();
+  }
+
+  // ============================================================
+  // LIST VIEW
+  // ============================================================
+  function renderListView() {
+    const q = state.searchQuery.toLowerCase();
+    let filteredPlaces = state.places.filter(p => {
+      if (state.activeCategory !== 'all' && p.category !== state.activeCategory) return false;
+      if (!q) return true;
+      return (p.name + ' ' + (p.short_code || '') + ' ' + (p.full_name || '') + ' ' + (p.description || '')).toLowerCase().includes(q);
+    });
+    let filteredPaths = q ? [] : state.paths; // hide paths when searching
+
+    // Category chips
+    const counts = { all: state.places.length };
+    CFG.categories.forEach(c => counts[c.id] = 0);
+    state.places.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
+
+    const chips = [
+      `<button class="chip ${state.activeCategory === 'all' ? 'active' : ''}" data-cat="all">
+        All <span class="badge">${counts.all}</span>
+      </button>`,
+      ...CFG.categories.filter(c => counts[c.id] > 0 || state.activeCategory === c.id).map(c => `
+        <button class="chip ${state.activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">
+          ${c.label} <span class="badge">${counts[c.id]}</span>
+        </button>
+      `)
+    ].join('');
+
+    const itemsHTML = [
+      ...filteredPlaces.map(p => renderItemCard(p, 'place')),
+      ...filteredPaths.map(p => renderItemCard(p, 'path')),
+    ].join('');
+
+    const total = filteredPlaces.length + filteredPaths.length;
+
+    $('sheet-body').innerHTML = `
+      <div class="filter-chips">${chips}</div>
+      ${total === 0
+        ? `<div class="empty-state">
+            <div class="emoji">📭</div>
+            <h3>${q ? 'No matches' : 'No items yet'}</h3>
+            <p>${q ? 'Try a different search' : 'Tap the + button to start collecting data'}</p>
+          </div>`
+        : `<div class="items-grid">${itemsHTML}</div>`
+      }
+    `;
+
+    $('sheet-body').querySelectorAll('.chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        state.activeCategory = chip.dataset.cat;
+        renderListView();
+      });
+    });
+
+    bindItemActions();
+  }
+
+  function renderItemCard(item, type) {
+    const isPath = type === 'path';
+    const cat = isPath
+      ? { color: '#10b981', icon: 'fa-route', label: 'Walkway' }
+      : catInfo(item.category);
+    const title = isPath ? (item.name || 'Unnamed path') : item.name;
+    const code = !isPath && item.short_code ? `<span class="item-code">${esc(item.short_code)}</span>` : '';
+    const isBuilding = !isPath && !!item.footprint_geojson;
+
+    let sub = '';
+    if (isPath) {
+      const coords = item.geojson?.coordinates || [];
+      const dist = coords.length > 1 ? turf.length(turf.lineString(coords), { units: 'meters' }) : 0;
+      sub = `${item.path_type || 'footpath'} · ${fmtDist(dist)} · ${item.created_by_email || ''}`;
+    } else {
+      sub = `${cat.label}${isBuilding ? ' · Building' : ''} · ${item.created_by_email || ''}`;
+    }
+
+    const photo = item.photos && item.photos[0]
+      ? `<img src="${esc(item.photos[0])}" alt="">`
+      : `<i class="fa-solid ${cat.icon}" style="color:${cat.color};"></i>`;
+
+    const canDelete = item.created_by === state.user.id;
+    const editBtn = isPath ? '' : `<button class="icon-btn" data-edit="${item.id}" data-type="${type}"><i class="fa-solid fa-pen"></i></button>`;
+    const delBtn = canDelete ? `<button class="icon-btn danger" data-delete="${item.id}" data-type="${type}"><i class="fa-solid fa-trash"></i></button>` : '';
+
+    return `
+      <div class="item-card" data-id="${item.id}" data-type="${type}">
+        <div class="item-thumb" style="background:${cat.color}20;">${photo}</div>
+        <div class="item-main">
+          <div class="item-title">${code}${esc(title)}</div>
+          <div class="item-sub">${esc(sub)}</div>
+        </div>
+        <div class="item-actions">${editBtn}${delBtn}</div>
+      </div>
+    `;
+  }
+
+  function bindItemActions() {
+    $('sheet-body').querySelectorAll('.item-card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (e.target.closest('.icon-btn')) return;
+        const id = card.dataset.id;
+        const type = card.dataset.type;
+        flyToItem(id, type);
+      });
+    });
+    $('sheet-body').querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = btn.dataset.edit;
+        const item = state.places.find(p => p.id === id);
+        if (item) openEditForm(item);
+      });
+    });
+    $('sheet-body').querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!confirm('Delete this item?')) return;
+        const table = btn.dataset.type === 'path' ? 'paths' : 'places';
+        const { error } = await sb.from(table).delete().eq('id', btn.dataset.delete);
+        if (error) { toast('Delete failed', true); return; }
+        toast('Deleted');
+        await loadAllData();
+      });
+    });
+  }
+
+  function flyToItem(id, type) {
+    let item;
+    if (type === 'path') {
+      item = state.paths.find(p => p.id === id);
+      if (item?.geojson?.coordinates?.length) {
+        const coords = item.geojson.coordinates;
+        const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+        state.map.fitBounds(bounds, { padding: 80, pitch: 50, duration: 900 });
+      }
+    } else {
+      item = state.places.find(p => p.id === id);
+      if (item) state.map.flyTo({ center: [item.lng, item.lat], zoom: 18, pitch: 55, duration: 900 });
+    }
+    if (window.innerWidth < 768) closeSheet();
+  }
+
+  // ============================================================
+  // SEARCH
+  // ============================================================
+  $('search-input').addEventListener('input', e => {
+    state.searchQuery = e.target.value.trim();
+    if (state.activeView !== 'list') {
+      state.activeView = 'list';
+      setActiveNav('list');
+      openSheet();
+    }
+    renderListView();
+  });
+
+  // ============================================================
+  // ADD MENU
+  // ============================================================
+  function openAddMenu() {
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">➕ Add new data</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="quick-actions">
+          <button class="quick-action" data-action="place">
+            <div class="icon-wrap" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="label">Place</div>
+            <div class="sub">Tap on map</div>
+          </button>
+          <button class="quick-action" data-action="building">
+            <div class="icon-wrap" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-building"></i></div>
+            <div class="label">Building</div>
+            <div class="sub">Draw outline</div>
+          </button>
+          <button class="quick-action" data-action="path">
+            <div class="icon-wrap" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fa-solid fa-route"></i></div>
+            <div class="label">Path</div>
+            <div class="sub">Draw line</div>
+          </button>
+          <button class="quick-action" data-action="track">
+            <div class="icon-wrap" style="background:rgba(168,85,247,0.15);color:#a855f7;"><i class="fa-solid fa-person-walking"></i></div>
+            <div class="label">GPS Track</div>
+            <div class="sub">Walk with phone</div>
+          </button>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);text-align:center;line-height:1.5;padding:8px;">
+          Pick a mode, then follow the prompt at the top of the map.
+        </div>
+      </div>
+    `);
+    document.querySelectorAll('.quick-action').forEach(b => {
+      b.addEventListener('click', () => {
+        const action = b.dataset.action;
+        closeModal();
+        if (action === 'track') {
+          state.activeView = 'track';
+          setActiveNav('track');
+          renderCurrentView();
+          openSheet();
+        } else {
+          startDrawMode(action);
+        }
+      });
+    });
+  }
+
+  function startDrawMode(mode) {
+    state.drawMode = mode;
+    clearPending();
+    const hint = mode === 'place' ? 'Tap on the map to add a place'
+              : mode === 'building' ? 'Tap points around the building, then double-tap to finish'
+              : 'Tap points along the path, then double-tap to finish';
+    $('mode-text').textContent = hint;
+    $('mode-indicator').classList.remove('hidden');
+    closeSheet();
+    setActiveNav('map');
+  }
+
+  function cancelDrawMode() {
+    state.drawMode = null;
+    clearPending();
+    $('mode-indicator').classList.add('hidden');
+  }
+
+  $('mode-cancel').addEventListener('click', cancelDrawMode);
+
+  // ============================================================
+  // PLACE FORM
+  // ============================================================
+  function openPlaceForm(lat, lng) {
+    cancelDrawMode();
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">📍 New Place</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        ${placeFormFields({ lat, lng })}
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save Place</button>
+      </div>
+    `, { saveLabel: 'Save Place', onSave: async () => {
+      const data = collectPlaceData();
+      if (!data) return;
+      data.lat = lat;
+      data.lng = lng;
+      data.footprint_geojson = null;
+      const { error } = await sb.from('places').insert(data);
+      if (error) throw error;
+      closeModal();
+      toast('Place added ✓');
+      await loadAllData();
+    }});
+  }
+
+  // ============================================================
+  // BUILDING FORM
+  // ============================================================
+  function openBuildingForm(vertices) {
+    cancelDrawMode();
+    const ring = vertices.concat([vertices[0]]);
+    const footprint = { type: 'Polygon', coordinates: [ring] };
+    const centerLng = vertices.reduce((s, v) => s + v[0], 0) / vertices.length;
+    const centerLat = vertices.reduce((s, v) => s + v[1], 0) / vertices.length;
+
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">🏢 New Building</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        ${placeFormFields({ lat: centerLat, lng: centerLng, isBuilding: true })}
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save Building</button>
+      </div>
+    `, { saveLabel: 'Save Building', onSave: async () => {
+      const data = collectPlaceData();
+      if (!data) return;
+      data.lat = centerLat;
+      data.lng = centerLng;
+      data.footprint_geojson = footprint;
+      const { error } = await sb.from('places').insert(data);
+      if (error) throw error;
+      closeModal();
+      toast('Building added ✓');
+      await loadAllData();
+    }});
+  }
+
+  // ============================================================
+  // PATH FORM
+  // ============================================================
+  function openPathForm(vertices) {
+    cancelDrawMode();
+    const dist = turf.length(turf.lineString(vertices), { units: 'meters' });
+
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">🛤 New Walkway</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Name (optional)</label>
+          <input type="text" id="f-name" placeholder="e.g. Main Gate → Block 27" autofocus>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Type</label>
+            <select id="f-path-type">
+              ${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Surface</label>
+            <select id="f-surface">
+              <option value="">Unknown</option>
+              ${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Width (m)</label>
+            <input type="number" id="f-width" value="2" min="0.5" step="0.5">
+          </div>
+          <div class="form-field">
+            <label>Length</label>
+            <input type="text" value="${fmtDist(dist)}" disabled style="opacity:0.6;">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Notes (optional)</label>
+          <textarea id="f-notes" placeholder="Landmarks, surface condition, etc…"></textarea>
+        </div>
+        <div style="background:var(--surface-2);padding:12px;border-radius:10px;">
+          <div class="toggle-row">
+            <span style="font-size:14px;">💡 Lit at night</span>
+            <div class="toggle on" id="f-lit"></div>
+          </div>
+          <div class="toggle-row">
+            <span style="font-size:14px;">♿ Wheelchair accessible</span>
+            <div class="toggle on" id="f-accessible"></div>
+          </div>
+          <div class="toggle-row">
+            <span style="font-size:14px;">🪜 Has steps</span>
+            <div class="toggle" id="f-steps"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save Walkway</button>
+      </div>
+    `, { saveLabel: 'Save Walkway', onSave: async () => {
+      const data = {
+        name: $('f-name').value.trim() || null,
+        path_type: $('f-path-type').value,
+        surface: $('f-surface').value || null,
+        width_m: Number($('f-width').value) || null,
+        is_lit: $('f-lit').classList.contains('on'),
+        is_accessible: $('f-accessible').classList.contains('on'),
+        has_steps: $('f-steps').classList.contains('on'),
+        geojson: { type: 'LineString', coordinates: vertices },
+        notes: $('f-notes').value.trim() || null,
+        created_by: state.user.id,
+        created_by_email: state.user.email,
+      };
+      const { error } = await sb.from('paths').insert(data);
+      if (error) throw error;
+      closeModal();
+      toast('Walkway added ✓');
+      await loadAllData();
+    }});
+
+    bindToggles();
+  }
+
+  // ============================================================
+  // EDIT FORM
+  // ============================================================
+  function openEditForm(item) {
+    const catOpts = CFG.categories.map(c =>
+      `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`
+    ).join('');
+
+    const amenityChips = CFG.amenities.map(a =>
+      `<button type="button" class="chip-toggle ${(item.amenities || []).includes(a.id) ? 'selected' : ''}" data-amenity="${a.id}">${a.label}</button>`
+    ).join('');
+
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">✏️ Edit ${item.footprint_geojson ? 'Building' : 'Place'}</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="f-name" value="${esc(item.name)}" required>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Short code</label>
+            <input type="text" id="f-code" value="${esc(item.short_code || '')}" placeholder="27">
+          </div>
+          <div class="form-field">
+            <label>Category</label>
+            <select id="f-category">${catOpts}</select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Full name</label>
+          <input type="text" id="f-fullname" value="${esc(item.full_name || '')}" placeholder="Block 27 — CSE Department">
+        </div>
+        ${item.footprint_geojson ? `
+        <div class="form-row">
+          <div class="form-field">
+            <label>Height (m)</label>
+            <input type="number" id="f-height" value="${item.height_m || 12}" min="1" max="200">
+          </div>
+          <div class="form-field">
+            <label>Floors</label>
+            <input type="number" id="f-floors" value="${item.floors || ''}" min="1" max="50">
+          </div>
+        </div>` : ''}
+        <div class="form-field">
+          <label>Amenities</label>
+          <div class="chip-group" id="amenity-group">${amenityChips}</div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Opening hours</label>
+            <input type="text" id="f-hours" value="${esc(item.opening_hours || '')}" placeholder="8AM–8PM, Mon–Sat">
+          </div>
+          <div class="form-field">
+            <label>Contact phone</label>
+            <input type="tel" id="f-phone" value="${esc(item.contact_phone || '')}" placeholder="+91...">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Description / notes</label>
+          <textarea id="f-desc" placeholder="Details…">${esc(item.description || item.notes || '')}</textarea>
+        </div>
+        <div style="background:var(--surface-2);padding:12px;border-radius:10px;margin-top:12px;">
+          <div class="toggle-row">
+            <span style="font-size:14px;">♿ Wheelchair accessible</span>
+            <div class="toggle ${item.is_accessible ? 'on' : ''}" id="f-accessible"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save Changes</button>
+      </div>
+    `, { saveLabel: 'Save Changes', onSave: async () => {
+      const name = $('f-name').value.trim();
+      if (!name) { toast('Name required', true); return; }
+      const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
+
+      const update = {
+        name,
+        short_code: $('f-code').value.trim() || null,
+        full_name: $('f-fullname').value.trim() || null,
+        category: $('f-category').value,
+        amenities,
+        opening_hours: $('f-hours').value.trim() || null,
+        contact_phone: $('f-phone').value.trim() || null,
+        description: $('f-desc').value.trim() || null,
+        is_accessible: $('f-accessible').classList.contains('on'),
+        updated_at: new Date().toISOString(),
+      };
+      if ($('f-height')) update.height_m = Number($('f-height').value) || 12;
+      if ($('f-floors')) update.floors = Number($('f-floors').value) || null;
+
+      const { error } = await sb.from('places').update(update).eq('id', item.id);
+      if (error) throw error;
+      closeModal();
+      toast('Updated ✓');
+      await loadAllData();
+    }});
+
+    bindToggles();
+    bindAmenityChips();
+  }
+
+  // ============================================================
+  // TRACK
+  // ============================================================
+  function renderTrackView() {
+    const accClass = 'bad';
+    const accText = state.watchId ? 'Waiting…' : 'Not started';
+
+    $('sheet-body').innerHTML = `
+      <div class="track-hero">
+        <div class="distance" id="track-dist">${fmtDist(state.totalDistance)}</div>
+        <div class="distance-label">Distance walked</div>
+      </div>
+
+      <div class="accuracy-pill">
+        <div class="accuracy-dot ${accClass}" id="track-acc-dot"></div>
+        <span>GPS accuracy: <b id="track-acc-text">${accText}</b></span>
+      </div>
+
+      <div class="track-metrics">
+        <div class="metric-card">
+          <div class="value" id="track-time">0:00</div>
+          <div class="label">Time</div>
+        </div>
+        <div class="metric-card">
+          <div class="value" id="track-points">${state.trackPoints.length}</div>
+          <div class="label">Points</div>
+        </div>
+        <div class="metric-card">
+          <div class="value" id="track-speed">0.0</div>
+          <div class="label">km/h</div>
+        </div>
+      </div>
+
+      <button class="btn-record ${state.isRecording ? 'recording' : ''}" id="btn-record" ${state.isRecording ? 'disabled' : ''}>
+        <i class="fa-solid fa-${state.isRecording ? 'circle-stop' : 'circle'}"></i>
+        ${state.isRecording ? 'Recording…' : 'Start Recording'}
+      </button>
+
+      <div class="track-controls">
+        <button class="btn-secondary" id="btn-pause" ${!state.isRecording ? 'disabled' : ''}>
+          <i class="fa-solid fa-${state.isPaused ? 'play' : 'pause'}"></i>
+          ${state.isPaused ? 'Resume' : 'Pause'}
+        </button>
+        <button class="btn-secondary" id="btn-stop" ${!state.isRecording ? 'disabled' : ''}>
+          <i class="fa-solid fa-stop"></i> Stop & Save
+        </button>
+      </div>
+
+      ${state.trackPoints.length > 0 && !state.isRecording ? `
+        <button class="btn-danger-outline" id="btn-discard">
+          <i class="fa-solid fa-trash"></i> Discard Track
+        </button>
+      ` : ''}
+
+      <div style="margin-top:20px;padding:14px;background:var(--surface-2);border-radius:10px;font-size:12px;color:var(--text-muted);line-height:1.6;">
+        <b style="color:var(--text);">📌 How it works:</b> Walk along the path with your phone. Points are auto-filtered (accuracy &lt;30m, ≥2m apart). Blue line shows your track live.
+      </div>
+    `;
+
+    bindTrackControls();
+  }
+
+  function bindTrackControls() {
+    const recBtn = $('btn-record');
+    if (recBtn && !state.isRecording) recBtn.onclick = startRecording;
+    const pauseBtn = $('btn-pause');
+    if (pauseBtn) pauseBtn.onclick = state.isPaused ? resumeRecording : pauseRecording;
+    const stopBtn = $('btn-stop');
+    if (stopBtn) stopBtn.onclick = stopRecording;
+    const discBtn = $('btn-discard');
+    if (discBtn) discBtn.onclick = () => {
+      if (confirm('Discard this track?')) { clearTrack(); renderTrackView(); }
+    };
+  }
+
+  function startRecording() {
+    if (!navigator.geolocation) { toast('GPS not available', true); return; }
+    state.isRecording = true;
+    state.isPaused = false;
+    state.trackPoints = [];
+    state.totalDistance = 0;
+    state.trackStartTime = Date.now();
+    state.trackPausedAt = null;
+    state.totalPausedMs = 0;
+    state.lastAcceptedPoint = null;
 
     state.watchId = navigator.geolocation.watchPosition(
       onPositionUpdate,
       onPositionError,
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 15000,
-      }
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
-    return true;
+
+    renderTrackView();
+    toast('Recording started');
   }
 
-  function stopWatching() {
-    if (state.watchId !== null) {
-      navigator.geolocation.clearWatch(state.watchId);
-      state.watchId = null;
-    }
-  }
+  function onPositionUpdate(pos) {
+    const { latitude, longitude, accuracy, speed } = pos.coords;
+    const dot = $('track-acc-dot');
+    const txt = $('track-acc-text');
+    if (txt) txt.textContent = accuracy ? Math.round(accuracy) + ' m' : '—';
+    if (dot) dot.className = 'accuracy-dot ' + (accuracy <= 10 ? 'good' : accuracy <= 25 ? 'ok' : 'bad');
 
-  function onPositionUpdate(position) {
-    const { latitude, longitude, accuracy, speed } = position.coords;
-    const timestamp = position.timestamp;
-
-    // Update accuracy indicator
-    const dot = $('accuracy-dot');
-    const txt = $('accuracy-text');
-    txt.textContent = accuracy ? Math.round(accuracy) + ' m' : '—';
-    dot.className = 'accuracy-dot ' +
-      (accuracy <= 10 ? 'good' : accuracy <= 25 ? 'ok' : 'bad');
-
-    // Update current position marker & accuracy circle
-    updateCurrentPosition(longitude, latitude, accuracy);
+    updateCurrentPos(longitude, latitude, accuracy);
 
     if (!state.isRecording || state.isPaused) return;
-
-    // Filter: skip if accuracy > 30 m (too noisy)
     if (accuracy && accuracy > 30) return;
 
-    // Filter: skip if too close to last point (< 2 m)
     if (state.lastAcceptedPoint) {
       const d = turf.distance(
         turf.point([state.lastAcceptedPoint.lng, state.lastAcceptedPoint.lat]),
@@ -999,113 +2039,64 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       state.totalDistance += d;
     }
 
-    // Optional smoothing: weighted average with previous point
-    let lng = longitude, lat = latitude;
-    if (state.lastAcceptedPoint) {
-      lng = state.lastAcceptedPoint.lng * 0.6 + longitude * 0.4;
-      lat = state.lastAcceptedPoint.lat * 0.6 + latitude * 0.4;
-    }
+    const p = { lng: longitude, lat: latitude, accuracy, timestamp: pos.timestamp };
+    state.trackPoints.push(p);
+    state.lastAcceptedPoint = p;
 
-    const point = { lng, lat, accuracy: accuracy || 0, timestamp };
-    state.trackPoints.push(point);
-    state.lastAcceptedPoint = point;
-
-    updateTrackOnMap();
+    updateTrackLine();
     updateTrackStats(speed);
   }
 
   function onPositionError(err) {
-    console.warn('GPS error:', err);
-    toast('GPS error: ' + (err.message || 'unknown'), true);
+    console.warn(err);
+    toast('GPS: ' + (err.message || 'error'), true);
   }
 
-  function updateCurrentPosition(lng, lat, accuracy) {
-    // Marker
+  function updateCurrentPos(lng, lat, accuracy) {
     if (!state.currentPosMarker) {
       const el = document.createElement('div');
-      el.style.cssText = `
-        width:18px;height:18px;border-radius:50%;
-        background:#3b82f6;border:3px solid #fff;
-        box-shadow:0 0 12px rgba(59,130,246,0.8);
-      `;
-      state.currentPosMarker = new maplibregl.Marker({ element: el })
-        .setLngLat([lng, lat])
-        .addTo(state.map);
+      el.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 12px rgba(59,130,246,0.8);';
+      state.currentPosMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
     } else {
       state.currentPosMarker.setLngLat([lng, lat]);
     }
-
-    // Accuracy circle
-    if (state.accuracySource && accuracy) {
+    if (state.map.getSource('accuracy-src') && accuracy) {
       const circle = turf.circle([lng, lat], accuracy / 1000, { steps: 32, units: 'kilometers' });
-      state.accuracySource.setData(circle);
+      state.map.getSource('accuracy-src').setData(circle);
     }
   }
 
-  function updateTrackOnMap() {
-    if (!state.trackLineSource) return;
-    const coords = state.trackPoints.map(p => [p.lng, p.lat]);
-    state.trackLineSource.setData({
+  function updateTrackLine() {
+    if (!state.map.getSource('track-src')) return;
+    state.map.getSource('track-src').setData({
       type: 'Feature',
-      geometry: { type: 'LineString', coordinates: coords },
+      geometry: { type: 'LineString', coordinates: state.trackPoints.map(p => [p.lng, p.lat]) },
     });
   }
 
   function updateTrackStats(speed) {
-    const dist = state.totalDistance;
-    $('track-distance').textContent =
-      dist > 1000 ? (dist / 1000).toFixed(2) + ' km' : Math.round(dist) + ' m';
-
-    // Duration (excluding paused time)
-    if (state.trackStartTime) {
+    const distEl = $('track-dist');
+    if (distEl) distEl.textContent = fmtDist(state.totalDistance);
+    const pEl = $('track-points');
+    if (pEl) pEl.textContent = state.trackPoints.length;
+    const sEl = $('track-speed');
+    if (sEl) sEl.textContent = speed ? (speed * 3.6).toFixed(1) : '0.0';
+    const tEl = $('track-time');
+    if (tEl && state.trackStartTime) {
       let elapsed = Date.now() - state.trackStartTime - state.totalPausedMs;
-      if (state.isPaused && state.trackPausedAt) {
-        elapsed -= (Date.now() - state.trackPausedAt);
-      }
-      const mins = Math.floor(elapsed / 60000);
-      const secs = Math.floor((elapsed % 60000) / 1000);
-      $('track-time').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      if (state.isPaused && state.trackPausedAt) elapsed -= (Date.now() - state.trackPausedAt);
+      const m = Math.floor(elapsed / 60000);
+      const s = Math.floor((elapsed % 60000) / 1000);
+      tEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
     }
-
-    $('track-points').textContent = state.trackPoints.length;
-
-    // Speed (m/s to km/h)
-    const kmh = speed ? (speed * 3.6).toFixed(1) : '0.0';
-    $('track-speed').textContent = kmh;
-  }
-
-  function startRecording() {
-    if (!startWatching()) return;
-
-    state.isRecording = true;
-    state.isPaused = false;
-    state.trackPoints = [];
-    state.totalDistance = 0;
-    state.trackStartTime = Date.now();
-    state.trackPausedAt = null;
-    state.totalPausedMs = 0;
-    state.lastAcceptedPoint = null;
-
-    $('btn-record').innerHTML = '<i class="fa-solid fa-circle-stop"></i> Recording…';
-    $('btn-record').classList.add('recording');
-    $('btn-record').disabled = true;
-    $('btn-pause').disabled = false;
-    $('btn-stop').disabled = false;
-    $('btn-discard').style.display = 'none';
-
-    updateTrackStats(0);
-    toast('Recording started — walk the path');
   }
 
   function pauseRecording() {
     if (!state.isRecording || state.isPaused) return;
     state.isPaused = true;
     state.trackPausedAt = Date.now();
-    $('btn-pause').innerHTML = '<i class="fa-solid fa-play"></i> Resume';
-    $('btn-pause').onclick = resumeRecording;
-    toast('Paused');
+    renderTrackView();
   }
-
   function resumeRecording() {
     if (!state.isRecording || !state.isPaused) return;
     state.isPaused = false;
@@ -1113,38 +2104,27 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
       state.totalPausedMs += Date.now() - state.trackPausedAt;
       state.trackPausedAt = null;
     }
-    $('btn-pause').innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
-    $('btn-pause').onclick = pauseRecording;
-    toast('Resumed');
+    renderTrackView();
+  }
+
+  function stopWatching() {
+    if (state.watchId !== null) {
+      navigator.geolocation.clearWatch(state.watchId);
+      state.watchId = null;
+    }
   }
 
   function stopRecording() {
-    if (!state.isRecording) return;
-
     stopWatching();
     state.isRecording = false;
     state.isPaused = false;
-
-    // Show discard button
-    $('btn-record').innerHTML = '<i class="fa-solid fa-circle"></i> Start New Track';
-    $('btn-record').classList.remove('recording');
-    $('btn-record').disabled = false;
-    $('btn-pause').disabled = true;
-    $('btn-stop').disabled = true;
-    $('btn-discard').style.display = '';
-
     if (state.trackPoints.length < 2) {
-      toast('Track too short — discard and try again', true);
+      toast('Track too short', true);
+      clearTrack();
+      renderTrackView();
       return;
     }
-
-    openTrackSaveModal();
-  }
-
-  function discardTrack() {
-    if (!confirm('Discard this track?')) return;
-    clearTrack();
-    toast('Discarded');
+    openTrackSaveForm();
   }
 
   function clearTrack() {
@@ -1154,601 +2134,392 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; }
     state.trackPausedAt = null;
     state.totalPausedMs = 0;
     state.lastAcceptedPoint = null;
-
-    if (state.trackLineSource) {
-      state.trackLineSource.setData({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: [] },
-      });
+    if (state.map.getSource('track-src')) {
+      state.map.getSource('track-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
     }
-    if (state.accuracySource) {
-      state.accuracySource.setData({
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: [[]] },
-      });
+    if (state.map.getSource('accuracy-src')) {
+      state.map.getSource('accuracy-src').setData({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } });
     }
-    if (state.currentPosMarker) {
-      state.currentPosMarker.remove();
-      state.currentPosMarker = null;
-    }
-
-    $('track-distance').textContent = '0 m';
-    $('track-time').textContent = '0:00';
-    $('track-points').textContent = '0';
-    $('track-speed').textContent = '0.0';
-    $('btn-discard').style.display = 'none';
-    $('btn-record').innerHTML = '<i class="fa-solid fa-circle"></i> Start Recording';
-    $('btn-record').classList.remove('recording');
-    $('btn-record').disabled = false;
-    $('btn-pause').disabled = true;
-    $('btn-stop').disabled = true;
+    if (state.currentPosMarker) { state.currentPosMarker.remove(); state.currentPosMarker = null; }
   }
 
-  function openTrackSaveModal() {
-    // Simplify the track for storage
+  function openTrackSaveForm() {
     const coords = state.trackPoints.map(p => [p.lng, p.lat]);
-    const line = turf.lineString(coords);
-    const simplified = turf.simplify(line, { tolerance: 0.00003, highQuality: true });
+    const simplified = turf.simplify(turf.lineString(coords), { tolerance: 0.00003, highQuality: true });
     const finalCoords = simplified.geometry.coordinates;
-
     const dist = turf.length(simplified, { units: 'meters' });
-    const durationMin = Math.round(
-      (Date.now() - state.trackStartTime - state.totalPausedMs) / 60000
-    );
+    const durationMin = Math.round((Date.now() - state.trackStartTime - state.totalPausedMs) / 60000);
 
-    openModal('Save Walkway', `
-      <div class="form-field">
-        <label>Name</label>
-        <input id="f-name" type="text" placeholder="e.g. Main Gate → Block 27" required autofocus>
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">💾 Save Track</div>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="form-field">
-        <label>Notes (optional)</label>
-        <textarea id="f-notes" placeholder="Surface, landmarks, etc…"></textarea>
+      <div class="modal-body">
+        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:16px;font-size:13px;line-height:1.7;">
+          📏 <b>${fmtDist(dist)}</b> &nbsp;·&nbsp; ⏱ <b>${durationMin} min</b> &nbsp;·&nbsp; 📍 <b>${finalCoords.length} points</b>
+        </div>
+        <div class="form-field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Type</label>
+            <select id="f-path-type">
+              ${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Surface</label>
+            <select id="f-surface">
+              <option value="">Unknown</option>
+              ${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Landmarks, etc…"></textarea>
+        </div>
       </div>
-      <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;font-size:13px;">
-        <b>Track summary:</b><br>
-        📏 ${Math.round(dist)} m &nbsp;·&nbsp; ⏱ ${durationMin} min &nbsp;·&nbsp; 📍 ${finalCoords.length} points
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" id="modal-save">Save</button>
       </div>
-    `, async () => {
+    `, { saveLabel: 'Save', onSave: async () => {
       const name = $('f-name').value.trim();
-      const notes = $('f-notes').value.trim();
-      if (!name) { toast('Name is required', true); return; }
-
+      if (!name) { toast('Name required', true); return; }
       const { error } = await sb.from('paths').insert({
         name,
+        path_type: $('f-path-type').value,
+        surface: $('f-surface').value || null,
         geojson: { type: 'LineString', coordinates: finalCoords },
-        is_indoor: false,
-        is_accessible: true,
-        notes: notes || null,
+        notes: $('f-notes').value.trim() || null,
         created_by: state.user.id,
         created_by_email: state.user.email,
       });
       if (error) throw error;
-
-      hide($('save-modal'));
+      closeModal();
       clearTrack();
-      toast('Walkway saved ✓');
+      toast('Track saved ✓');
       await loadAllData();
+      renderTrackView();
+    }});
+  }
+
+  // ============================================================
+  // STATS
+  // ============================================================
+  function renderStatsView() {
+    const total = state.places.length + state.paths.length;
+    const buildings = state.places.filter(p => p.footprint_geojson).length;
+    const places = state.places.length - buildings;
+    const paths = state.paths.length;
+
+    // Completeness: items with short_code + description + (amenities or photos)
+    const complete = state.places.filter(p => p.short_code && p.description && ((p.amenities && p.amenities.length) || (p.photos && p.photos.length))).length;
+    const pct = state.places.length ? Math.round((complete / state.places.length) * 100) : 0;
+
+    const catCounts = {};
+    CFG.categories.forEach(c => catCounts[c.id] = 0);
+    state.places.forEach(p => { if (catCounts[p.category] !== undefined) catCounts[p.category]++; });
+    const maxCat = Math.max(...Object.values(catCounts), 1);
+
+    const contributors = {};
+    [...state.places, ...state.paths].forEach(x => {
+      const e = x.created_by_email || 'unknown';
+      contributors[e] = (contributors[e] || 0) + 1;
+    });
+
+    $('sheet-body').innerHTML = `
+      <div class="section-header" style="margin-top:16px;">Overview</div>
+      <div class="stats-hero">
+        <div class="stat-block">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div class="value">${total}</div>
+              <div class="label">Total items</div>
+            </div>
+            <div class="progress-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
+          </div>
+        </div>
+        <div class="stat-block">
+          <div class="value">${buildings}</div>
+          <div class="label">Buildings</div>
+        </div>
+        <div class="stat-block">
+          <div class="value">${places}</div>
+          <div class="label">Places / POIs</div>
+        </div>
+        <div class="stat-block">
+          <div class="value">${paths}</div>
+          <div class="label">Walkways</div>
+        </div>
+      </div>
+
+      <div class="section-header">By category</div>
+      <div class="category-bars">
+        ${CFG.categories.filter(c => catCounts[c.id] > 0).map(c => `
+          <div class="cat-row">
+            <div class="label"><i class="fa-solid ${c.icon}" style="color:${c.color};width:14px;"></i> ${c.label}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(catCounts[c.id] / maxCat) * 100}%;background:${c.color};"></div></div>
+            <div class="count">${catCounts[c.id]}</div>
+          </div>
+        `).join('') || '<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:20px;">No data yet</div>'}
+      </div>
+
+      <div class="section-header">Contributors</div>
+      <div class="items-grid">
+        ${Object.entries(contributors).map(([email, count]) => `
+          <div class="item-card" style="cursor:default;">
+            <div class="item-thumb" style="background:var(--surface-3);color:var(--text);font-weight:800;font-size:14px;">${email.charAt(0).toUpperCase()}</div>
+            <div class="item-main">
+              <div class="item-title">${esc(email)}</div>
+              <div class="item-sub">${count} item${count > 1 ? 's' : ''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="section-header">Export</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="btn-secondary" id="btn-export-json" style="flex:1;"><i class="fa-solid fa-code"></i> JSON</button>
+        <button class="btn-secondary" id="btn-export-geojson" style="flex:1;"><i class="fa-solid fa-map"></i> GeoJSON</button>
+      </div>
+    `;
+
+    $('btn-export-json').onclick = exportJSON;
+    $('btn-export-geojson').onclick = exportGeoJSON;
+  }
+
+  function downloadFile(name, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+    toast('Downloaded ' + name);
+  }
+
+  function exportJSON() {
+    downloadFile('lpu-data-' + new Date().toISOString().slice(0, 10) + '.json', {
+      places: state.places, paths: state.paths,
+    });
+  }
+
+  function exportGeoJSON() {
+    const features = [
+      ...state.places.map(p => ({
+        type: 'Feature',
+        properties: {
+          kind: 'place', id: p.id, name: p.name, short_code: p.short_code,
+          full_name: p.full_name, category: p.category,
+          floors: p.floors, amenities: p.amenities, hours: p.opening_hours,
+          phone: p.contact_phone, is_accessible: p.is_accessible, description: p.description,
+        },
+        geometry: p.footprint_geojson || { type: 'Point', coordinates: [p.lng, p.lat] },
+      })),
+      ...state.paths.map(p => ({
+        type: 'Feature',
+        properties: {
+          kind: 'path', id: p.id, name: p.name, path_type: p.path_type,
+          surface: p.surface, width_m: p.width_m, is_lit: p.is_lit,
+          is_accessible: p.is_accessible, has_steps: p.has_steps,
+        },
+        geometry: p.geojson,
+      })),
+    ];
+    downloadFile('lpu-campus-' + new Date().toISOString().slice(0, 10) + '.geojson', {
+      type: 'FeatureCollection', features,
     });
   }
 
   // ============================================================
-  // MODALS
+  // MODAL SYSTEM
   // ============================================================
-  function openModal(title, fieldsHTML, onSubmit) {
-    $('save-modal-title').textContent = title;
-    $('save-form-fields').innerHTML = fieldsHTML;
-    show($('save-modal'));
+  let modalSaveHandler = null;
 
-    const form = $('save-form');
-    const newForm = form.cloneNode(true);
-    form.parentNode.replaceChild(newForm, form);
+  function showModal(html, { saveLabel, onSave } = {}) {
+    $('modal').innerHTML = html;
+    $('modal').classList.remove('hidden');
+    $('modal-backdrop').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
-    newForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (state.saving) return;
-      state.saving = true;
-      $('btn-confirm-save').disabled = true;
-      $('btn-confirm-save').textContent = 'Saving…';
-      try {
-        await onSubmit();
-      } catch (err) {
-        console.error(err);
-        toast('Save failed: ' + (err.message || err), true);
-      } finally {
-        state.saving = false;
-        $('btn-confirm-save').disabled = false;
-        $('btn-confirm-save').textContent = 'Save';
-      }
-    });
+    if (onSave) {
+      modalSaveHandler = onSave;
+      const btn = $('modal-save');
+      if (btn) btn.onclick = async () => {
+        btn.disabled = true;
+        const orig = btn.textContent;
+        btn.textContent = 'Saving…';
+        try {
+          await onSave();
+        } catch (err) {
+          console.error(err);
+          toast('Error: ' + (err.message || err), true);
+          btn.disabled = false;
+          btn.textContent = orig;
+        }
+      };
+    }
+  }
 
-    $('btn-cancel-save').onclick = () => {
-      hide($('save-modal'));
-      if (state.drawMode !== 'track') clearPending();
+  function closeModal() {
+    $('modal').classList.add('hidden');
+    $('modal-backdrop').classList.add('hidden');
+    $('modal').innerHTML = '';
+    document.body.style.overflow = '';
+    modalSaveHandler = null;
+  }
+  window.closeModal = closeModal;
+
+  $('modal-backdrop').addEventListener('click', closeModal);
+
+  // ============================================================
+  // SHARED FORM PARTS
+  // ============================================================
+  function placeFormFields({ lat, lng, isBuilding }) {
+    const catOpts = CFG.categories.map(c =>
+      `<option value="${c.id}">${c.label}</option>`
+    ).join('');
+    const amenityChips = CFG.amenities.map(a =>
+      `<button type="button" class="chip-toggle" data-amenity="${a.id}">${a.label}</button>`
+    ).join('');
+
+    return `
+      <div class="form-field">
+        <label>Name <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="${isBuilding ? 'Block 27' : 'Block 27 Main Entrance'}" required autofocus>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Short code</label>
+          <input type="text" id="f-code" placeholder="27">
+        </div>
+        <div class="form-field">
+          <label>Category</label>
+          <select id="f-category">${catOpts}</select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Full name</label>
+        <input type="text" id="f-fullname" placeholder="Block 27 — CSE Department">
+      </div>
+      ${isBuilding ? `
+      <div class="form-row">
+        <div class="form-field">
+          <label>Height (m)</label>
+          <input type="number" id="f-height" value="12" min="1" max="200">
+        </div>
+        <div class="form-field">
+          <label>Floors</label>
+          <input type="number" id="f-floors" min="1" max="50" placeholder="3">
+        </div>
+      </div>` : ''}
+      <div class="form-field">
+        <label>Amenities</label>
+        <div class="chip-group" id="amenity-group">${amenityChips}</div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Opening hours</label>
+          <input type="text" id="f-hours" placeholder="8AM–8PM">
+        </div>
+        <div class="form-field">
+          <label>Contact phone</label>
+          <input type="tel" id="f-phone" placeholder="+91...">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="Details…"></textarea>
+      </div>
+      <div style="background:var(--surface-2);padding:12px;border-radius:10px;">
+        <div class="toggle-row">
+          <span style="font-size:14px;">♿ Wheelchair accessible</span>
+          <div class="toggle on" id="f-accessible"></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;color:var(--text-muted);text-align:center;">
+        📍 Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}
+      </div>
+    `;
+  }
+
+  function collectPlaceData() {
+    const name = $('f-name').value.trim();
+    if (!name) { toast('Name required', true); return null; }
+    const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
+
+    return {
+      name,
+      short_code: $('f-code').value.trim() || null,
+      full_name: $('f-fullname').value.trim() || null,
+      category: $('f-category').value,
+      amenities,
+      opening_hours: $('f-hours').value.trim() || null,
+      contact_phone: $('f-phone').value.trim() || null,
+      description: $('f-desc').value.trim() || null,
+      is_accessible: $('f-accessible').classList.contains('on'),
+      height_m: $('f-height') ? Number($('f-height').value) || 12 : 12,
+      floors: $('f-floors') ? Number($('f-floors').value) || null : null,
+      created_by: state.user.id,
+      created_by_email: state.user.email,
     };
   }
 
-  function openPlaceModal(lat, lng) {
-    const catOptions = CFG.categories.map(c =>
-      `<option value="${c.id}">${c.label}</option>`
-    ).join('');
-
-    openModal('Add Place', `
-      <div class="form-field">
-        <label>Name</label>
-        <input id="f-name" type="text" placeholder="e.g. Block 27" required autofocus>
-      </div>
-      <div class="form-field">
-        <label>Category</label>
-        <select id="f-category">${catOptions}</select>
-      </div>
-      <div class="form-field">
-        <label>Notes (optional)</label>
-        <textarea id="f-notes" placeholder="Floor, entrance, other info…"></textarea>
-      </div>
-      <input type="hidden" id="f-lat" value="${lat}">
-      <input type="hidden" id="f-lng" value="${lng}">
-    `, async () => {
-      const name = $('f-name').value.trim();
-      const category = $('f-category').value;
-      const notes = $('f-notes').value.trim();
-      if (!name) { toast('Name is required', true); return; }
-
-      const { error } = await sb.from('places').insert({
-        name, category, lat, lng,
-        notes: notes || null,
-        created_by: state.user.id,
-        created_by_email: state.user.email,
-      });
-      if (error) throw error;
-
-      hide($('save-modal'));
-      toast('Place saved ✓');
-      await loadAllData();
+  function bindToggles() {
+    document.querySelectorAll('.toggle').forEach(t => {
+      if (t.dataset.bound) return;
+      t.dataset.bound = '1';
+      t.addEventListener('click', () => t.classList.toggle('on'));
     });
   }
 
-  function openPathModal(vertices) {
-    const geom = { type: 'LineString', coordinates: vertices };
-    openModal('Add Walkway', `
-      <div class="form-field">
-        <label>Name (optional)</label>
-        <input id="f-name" type="text" placeholder="e.g. Walkway A" autofocus>
-      </div>
-      <div class="form-field">
-        <label>Notes (optional)</label>
-        <textarea id="f-notes" placeholder="Surface, width, etc…"></textarea>
-      </div>
-      <div class="form-field" style="flex-direction:row;align-items:center;gap:8px;">
-        <input id="f-indoor" type="checkbox" style="width:auto;padding:0;">
-        <label style="text-transform:none;font-size:14px;color:var(--text);margin:0;font-weight:400;">Indoor path</label>
-      </div>
-    `, async () => {
-      const name = $('f-name').value.trim();
-      const notes = $('f-notes').value.trim();
-      const isIndoor = $('f-indoor').checked;
-
-      const { error } = await sb.from('paths').insert({
-        name: name || null,
-        geojson: geom,
-        is_indoor: isIndoor,
-        notes: notes || null,
-        created_by: state.user.id,
-        created_by_email: state.user.email,
-      });
-      if (error) throw error;
-
-      hide($('save-modal'));
-      clearPending();
-      toast('Walkway saved ✓');
-      await loadAllData();
+  function bindAmenityChips() {
+    document.querySelectorAll('#amenity-group .chip-toggle').forEach(chip => {
+      if (chip.dataset.bound) return;
+      chip.dataset.bound = '1';
+      chip.addEventListener('click', () => chip.classList.toggle('selected'));
     });
   }
 
-  function openBuildingModal(vertices) {
-    const ring = vertices.concat([vertices[0]]);
-    const footprint = { type: 'Polygon', coordinates: [ring] };
-    const centerLng = vertices.reduce((s, v) => s + v[0], 0) / vertices.length;
-    const centerLat = vertices.reduce((s, v) => s + v[1], 0) / vertices.length;
-
-    const catOptions = CFG.categories.map(c =>
-      `<option value="${c.id}">${c.label}</option>`
-    ).join('');
-
-    openModal('Add Building', `
-      <div class="form-field">
-        <label>Name</label>
-        <input id="f-name" type="text" placeholder="e.g. Block 27" required autofocus>
-      </div>
-      <div class="form-field">
-        <label>Category</label>
-        <select id="f-category">${catOptions}</select>
-      </div>
-      <div class="form-field">
-        <label>Height (metres)</label>
-        <input id="f-height" type="number" value="12" min="1" max="200">
-      </div>
-      <div class="form-field">
-        <label>Notes (optional)</label>
-        <textarea id="f-notes" placeholder="Floors, departments, etc…"></textarea>
-      </div>
-    `, async () => {
-      const name = $('f-name').value.trim();
-      const category = $('f-category').value;
-      const height = Number($('f-height').value) || 12;
-      const notes = $('f-notes').value.trim();
-      if (!name) { toast('Name is required', true); return; }
-
-      const { error } = await sb.from('places').insert({
-        name, category,
-        lat: centerLat, lng: centerLng,
-        footprint_geojson: footprint,
-        height_m: height,
-        notes: notes || null,
-        created_by: state.user.id,
-        created_by_email: state.user.email,
-      });
-      if (error) throw error;
-
-      hide($('save-modal'));
-      clearPending();
-      toast('Building saved ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // EDIT PLACE / BUILDING
-  // ============================================================
-  function openEditModal(item) {
-    const isBuilding = !!item.footprint_geojson;
-    const catOptions = CFG.categories.map(c =>
-      `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`
-    ).join('');
-
-    openModal(isBuilding ? 'Edit Building' : 'Edit Place', `
-      <div class="form-field">
-        <label>Name</label>
-        <input id="f-name" type="text" value="${escapeHtml(item.name)}" required>
-      </div>
-      <div class="form-field">
-        <label>Category</label>
-        <select id="f-category">${catOptions}</select>
-      </div>
-      ${isBuilding ? `
-      <div class="form-field">
-        <label>Height (metres)</label>
-        <input id="f-height" type="number" value="${item.height_m || 12}" min="1" max="200">
-      </div>` : ''}
-      <div class="form-field">
-        <label>Notes</label>
-        <textarea id="f-notes">${escapeHtml(item.notes || '')}</textarea>
-      </div>
-    `, async () => {
-      const name = $('f-name').value.trim();
-      const category = $('f-category').value;
-      const notes = $('f-notes').value.trim();
-      const height = isBuilding ? Number($('f-height').value) || 12 : null;
-      if (!name) { toast('Name is required', true); return; }
-
-      const update = { name, category, notes: notes || null };
-      if (isBuilding) update.height_m = height;
-
-      const { error } = await sb.from('places').update(update).eq('id', item.id);
-      if (error) throw error;
-
-      hide($('save-modal'));
-      toast('Updated ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // LOAD & RENDER DATA
-  // ============================================================
-  async function loadAllData() {
-    try {
-      const [placesRes, pathsRes] = await Promise.all([
-        sb.from('places').select('*').order('created_at', { ascending: false }),
-        sb.from('paths').select('*').order('created_at', { ascending: false }),
-      ]);
-      if (placesRes.error) throw placesRes.error;
-      if (pathsRes.error) throw pathsRes.error;
-
-      state.places = placesRes.data || [];
-      state.paths = pathsRes.data || [];
-
-      renderPathsOnMap();
-      renderFootprintsOnMap();
-      renderMarkersOnMap();
-      renderList();
-      updateStats();
-    } catch (err) {
-      console.error('Load error:', err);
-      toast('Failed to load data: ' + err.message, true);
-    }
-  }
-
-  let placeMarkers = [];
-
-  function renderMarkersOnMap() {
-    placeMarkers.forEach(m => m.remove());
-    placeMarkers = [];
-
-    state.places.forEach(p => {
-      const cat = CFG.categories.find(c => c.id === p.category) || CFG.categories[CFG.categories.length - 1];
-      const el = document.createElement('div');
-      el.style.cssText = `
-        width:30px;height:30px;border-radius:50%;
-        background:${cat.color};border:2px solid #fff;
-        display:flex;align-items:center;justify-content:center;
-        color:#fff;font-size:14px;font-weight:700;
-        box-shadow:0 2px 8px rgba(0,0,0,0.5);
-        cursor:pointer;
-      `;
-      el.innerHTML = cat.label.split(' ')[0];
-
-      const m = new maplibregl.Marker({ element: el })
-        .setLngLat([p.lng, p.lat])
-        .setPopup(new maplibregl.Popup({ offset: 20, closeButton: false }).setHTML(
-          `<div style="font-family:inherit;min-width:140px;">
-            <b style="color:${cat.color};font-size:14px;">${escapeHtml(p.name)}</b><br>
-            <small style="color:#94a3b8;">${cat.label}</small>
-          </div>`
-        ))
-        .addTo(state.map);
-
-      placeMarkers.push(m);
-    });
-  }
-
-  function renderPathsOnMap() {
-    if (!state.map.getSource('paths-src')) return;
-    const features = state.paths
-      .filter(p => p.geojson)
-      .map(p => ({
-        type: 'Feature',
-        properties: { id: p.id, name: p.name },
-        geometry: p.geojson,
-      }));
-    state.map.getSource('paths-src').setData({
-      type: 'FeatureCollection',
-      features,
-    });
-  }
-
-  function renderFootprintsOnMap() {
-    if (!state.map.getSource('footprints-src')) return;
-    const features = state.places
-      .filter(p => p.footprint_geojson)
-      .map(p => ({
-        type: 'Feature',
-        properties: {
-          id: p.id,
-          name: p.name,
-          height: Number(p.height_m) || 10,
-        },
-        geometry: p.footprint_geojson,
-      }));
-    state.map.getSource('footprints-src').setData({
-      type: 'FeatureCollection',
-      features,
-    });
-  }
-
-  function renderList() {
-    // Only render list when NOT in track mode
-    if (state.drawMode === 'track') return;
-
-    const list = $('items-list');
-    list.style.display = '';
-    $('track-panel').classList.remove('active');
-
-    const items = [];
-
-    state.places.forEach(p => {
-      const cat = CFG.categories.find(c => c.id === p.category) || CFG.categories[CFG.categories.length - 1];
-      const isBuilding = !!p.footprint_geojson;
-      items.push({
-        type: isBuilding ? 'building' : 'place',
-        id: p.id,
-        raw: p,
-        name: p.name,
-        catColor: cat.color,
-        catLabel: cat.label,
-        meta: `${cat.label} · ${p.created_by_email || 'unknown'}`,
-        canDelete: p.created_by === state.user.id,
-        onClick: () => state.map.flyTo({ center: [p.lng, p.lat], zoom: 18, pitch: 55 }),
-      });
-    });
-
-    state.paths.forEach(p => {
-      const coords = p.geojson?.coordinates || [];
-      if (!coords.length) return;
-      const centerLng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
-      const centerLat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
-      items.push({
-        type: 'path',
-        id: p.id,
-        raw: p,
-        name: p.name || 'Unnamed path',
-        catColor: '#10b981',
-        catLabel: 'Walkway',
-        meta: `Walkway · ${p.created_by_email || 'unknown'}`,
-        canDelete: p.created_by === state.user.id,
-        onClick: () => state.map.flyTo({ center: [centerLng, centerLat], zoom: 18, pitch: 50 }),
-      });
-    });
-
-    if (!items.length) {
-      list.innerHTML = '<div class="list-empty">No items yet — click the map to start</div>';
-      return;
-    }
-
-    items.sort((a, b) => {
-      const order = { place: 1, building: 2, path: 3 };
-      return (order[a.type] || 0) - (order[b.type] || 0);
-    });
-
-    list.innerHTML = items.map(it => {
-      const icon = it.type === 'path' ? '🛤' : it.type === 'building' ? '🏢' : '📍';
-      return `
-        <div class="item" data-id="${it.id}" data-type="${it.type}">
-          <div class="item-icon" style="background:${it.catColor}20;color:${it.catColor}">${icon}</div>
-          <div class="item-info">
-            <div class="item-name">${escapeHtml(it.name)}</div>
-            <div class="item-meta">${it.meta}</div>
-          </div>
-          <div class="item-actions">
-            ${it.type !== 'path' ? `<button class="item-btn edit" data-edit="${it.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>` : ''}
-            ${it.canDelete ? `<button class="item-btn danger delete" data-delete="${it.id}" data-type="${it.type}" title="Delete"><i class="fa-solid fa-trash"></i></button>` : ''}
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    list.querySelectorAll('.item').forEach(el => {
-      const id = el.dataset.id;
-      const it = items.find(x => x.id === id);
-      if (!it) return;
-      el.addEventListener('click', (e) => {
-        if (e.target.closest('.item-btn')) return;
-        it.onClick();
-      });
-    });
-
-    list.querySelectorAll('.edit').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const it = items.find(x => x.id === btn.dataset.edit);
-        if (it && it.raw) openEditModal(it.raw);
-      });
-    });
-
-    list.querySelectorAll('.delete').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await deleteItem(btn.dataset.id, btn.dataset.type);
-      });
-    });
-  }
-
-  async function deleteItem(id, type) {
-    if (!confirm('Delete this item?')) return;
-    const table = type === 'path' ? 'paths' : 'places';
-    const { error } = await sb.from(table).delete().eq('id', id);
-    if (error) { toast('Delete failed: ' + error.message, true); return; }
-    toast('Deleted');
-    await loadAllData();
-  }
-
-  function updateStats() {
-    $('stat-places').textContent = state.places.filter(p => !p.footprint_geojson).length;
-    $('stat-paths').textContent = state.paths.length;
-    $('stat-buildings').textContent = state.places.filter(p => p.footprint_geojson).length;
-  }
-
-  // ============================================================
-  // TABS
-  // ============================================================
-  function setupTabs() {
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        const mode = tab.dataset.mode;
-        state.drawMode = mode;
-        clearPending();
-
-        const hints = {
-          point: 'Tap on the map to add a place',
-          path: 'Tap points on the map, double-tap to finish the walkway',
-          polygon: 'Tap points around a building, double-tap to finish',
-          track: 'Walk with your phone to record the path automatically',
-        };
-        $('mode-hint').textContent = hints[mode] || '';
-
-        if (mode === 'track') {
-          $('items-list').style.display = 'none';
-          $('track-panel').classList.add('active');
-          // Stop any ongoing recording when leaving? No, keep it running.
-        } else {
-          $('track-panel').classList.remove('active');
-          renderList();
-        }
-      });
-    });
-  }
+  // Show/hide toggles bound on every modal open
+  const origShowModal = showModal;
+  showModal = function(html, opts) {
+    origShowModal(html, opts);
+    bindToggles();
+    bindAmenityChips();
+  };
 
   // ============================================================
   // FABs
   // ============================================================
-  function setupFabs() {
-    $('fab-locate').addEventListener('click', () => {
-      if (!navigator.geolocation) { toast('GPS unavailable', true); return; }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          state.map.flyTo({
-            center: [pos.coords.longitude, pos.coords.latitude],
-            zoom: 18, pitch: 55,
-          });
-          toast('Located');
-        },
-        () => toast('GPS denied', true),
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
+  $('fab-locate').addEventListener('click', () => {
+    if (!navigator.geolocation) { toast('No GPS', true); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        state.map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 18, pitch: 55 });
+        toast('Located');
+      },
+      () => toast('GPS denied', true),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
 
-    $('fab-3d').addEventListener('click', (e) => {
-      state.is3D = !state.is3D;
-      e.currentTarget.classList.toggle('active', state.is3D);
-      state.map.easeTo({
-        pitch: state.is3D ? 50 : 0,
-        bearing: state.is3D ? -15 : 0,
-        duration: 800,
-      });
-      if (state.map.getLayer('footprints-3d')) {
-        state.map.setLayoutProperty('footprints-3d', 'visibility', state.is3D ? 'visible' : 'none');
-      }
-    });
-
-    $('fab-refresh').addEventListener('click', async () => {
-      toast('Refreshing…');
-      await loadAllData();
-      toast('Done');
-    });
-  }
+  $('fab-3d').addEventListener('click', e => {
+    state.is3D = !state.is3D;
+    e.currentTarget.classList.toggle('active', state.is3D);
+    state.map.easeTo({ pitch: state.is3D ? 50 : 0, bearing: state.is3D ? -15 : 0, duration: 800 });
+    if (state.map.getLayer('footprints-3d')) {
+      state.map.setLayoutProperty('footprints-3d', 'visibility', state.is3D ? 'visible' : 'none');
+    }
+  });
 
   // ============================================================
-  // TRACK BUTTONS
+  // INIT
   // ============================================================
-  function setupTrackButtons() {
-    $('btn-record').addEventListener('click', () => {
-      if (state.isRecording) return;
-      startRecording();
-    });
-
-    $('btn-pause').addEventListener('click', () => {
-      if (state.isPaused) resumeRecording();
-      else pauseRecording();
-    });
-
-    $('btn-stop').addEventListener('click', () => {
-      stopRecording();
-    });
-
-    $('btn-discard').addEventListener('click', () => {
-      discardTrack();
-    });
-  }
-
-  // ============================================================
-  // BOOT
-  // ============================================================
-  setupTabs();
-  setupFabs();
-  setupTrackButtons();
   checkSession();
 })();
 </script>
