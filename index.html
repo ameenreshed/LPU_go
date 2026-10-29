@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>LPU GO — Data Studio</title>
+<link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+/* ============================================================
+   ROOT / RESET
+   ============================================================ */
+:root {
+  --brand: #f59e0b;
+  --brand-dark: #d97706;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #0f172a;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --border: rgba(255,255,255,0.1);
+  --success: #10b981;
+  --danger: #ef4444;
+  --blue: #3b82f6;
+  --glass: rgba(30,41,59,0.9);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.screen.hidden { display: none; }
+
+/* ============================================================
+   LOGIN SCREEN
+   ============================================================ */
+#login-screen {
+  align-items: center; justify-content: center;
+  padding: 20px;
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%);
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 24px;
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.login-logo {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 28px; color: #000;
+  margin: 0 auto 4px;
+  box-shadow: 0 8px 24px rgba(245,158,11,0.4);
+}
+.login-card h1 { margin: 0; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+.login-card p { margin: 0 0 8px; text-align: center; color: var(--muted); font-size: 13px; }
+.login-card input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.login-card input:focus { border-color: var(--brand); }
+.btn-primary {
+  background: var(--brand); color: #000;
+  border: none; padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: 700; font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--brand-dark); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-error { color: var(--danger); font-size: 13px; text-align: center; min-height: 18px; }
+.login-hint { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; line-height: 1.4; }
+
+/* ============================================================
+   MAIN SCREEN
+   ============================================================ */
+#main-screen { position: fixed; inset: 0; }
+#map { position: absolute; inset: 0; z-index: 1; }
+
+/* Top bar */
+.top-bar {
+  position: absolute;
+  top: calc(12px + var(--safe-top));
+  left: 12px; right: 12px;
+  z-index: 10;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.brand-small { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; }
+.brand-small .logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: #000; font-size: 13px; font-weight: 900;
+}
+.user-info { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+.user-info span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-logout {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+
+/* Floating action buttons */
+.fab-group {
+  position: absolute;
+  right: 12px;
+  bottom: calc(180px + var(--safe-bottom));
+  z-index: 15;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.fab {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  transition: transform 0.15s, background 0.15s;
+}
+.fab:active { transform: scale(0.92); }
+.fab.active { background: var(--brand); color: #000; border-color: var(--brand); }
+
+/* ============================================================
+   PANEL
+   ============================================================ */
+.panel {
+  position: absolute;
+  left: 12px; right: 12px;
+  bottom: calc(12px + var(--safe-bottom));
+  z-index: 12;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 16px 16px;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
+  max-height: 65vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+.panel-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 8px auto 4px; flex-shrink: 0; }
+
+/* Tabs */
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 8px;
+  flex-shrink: 0;
+}
+.tab {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  padding: 10px 4px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.tab i { font-size: 15px; }
+.tab.active { background: var(--brand); color: #000; }
+
+/* Mode hint */
+.mode-hint {
+  background: rgba(59,130,246,0.15);
+  border: 1px solid rgba(59,130,246,0.3);
+  color: #93c5fd;
+  font-size: 12px;
+  padding: 8px 12px;
+  margin: 0 8px 8px;
+  border-radius: 8px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Stats row */
+.stats {
+  display: flex; gap: 8px;
+  padding: 0 8px 8px;
+  font-size: 12px; color: var(--muted);
+  flex-shrink: 0;
+}
+.stats span {
+  background: rgba(0,0,0,0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  flex: 1; text-align: center;
+}
+.stats b { color: var(--text); }
+
+/* Items list */
+.list {
+  overflow-y: auto;
+  padding: 0 8px 12px;
+  flex: 1;
+  display: flex; flex-direction: column; gap: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.list-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 20px; }
+
+.item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.item:hover { border-color: var(--brand); background: rgba(245,158,11,0.05); }
+.item-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.item-btn {
+  background: transparent; border: none; color: var(--muted);
+  cursor: pointer; padding: 6px; font-size: 13px;
+}
+.item-btn:hover { color: var(--brand); }
+.item-btn.danger:hover { color: var(--danger); }
+
+/* ============================================================
+   TRACK UI
+   ============================================================ */
+.track-panel {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+.track-panel.active { display: flex; }
+
+.track-status {
+  text-align: center;
+  padding: 16px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.track-status .big {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: 'Space Grotesk', monospace;
+  color: var(--brand);
+}
+.track-status .label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.accuracy-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.accuracy-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.accuracy-dot.good { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.accuracy-dot.ok { background: var(--brand); box-shadow: 0 0 8px var(--brand); }
+.accuracy-dot.bad { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+.track-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.track-stat {
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.track-stat .value { font-size: 16px; font-weight: 700; }
+.track-stat .label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+
+.track-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.btn-record {
+  grid-column: span 2;
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 16px rgba(16,185,129,0.4);
+}
+.btn-record.recording { background: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.4); }
+.btn-record:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-secondary:hover { border-color: var(--muted); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal {
+  position: fixed; inset: 0;
+  z-index: 100;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  transition: opacity 0.2s;
+}
+.modal.hidden { opacity: 0; pointer-events: none; }
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 16px 16px;
+  padding: 20px;
+  width: 100%; max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: 14px;
+  transform: translateY(0);
+  transition: transform 0.2s;
+}
+.modal.hidden .modal-content { transform: translateY(20px); }
+.modal-content h2 { margin: 0; font-size: 18px; font-weight: 700; }
+
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label {
+  font-size: 12px; font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+}
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus { border-color: var(--brand); }
+.form-field textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+
+.modal-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+.btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-cancel:hover { border-color: var(--muted); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast {
+  position: fixed;
+  bottom: calc(100px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--brand);
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  z-index: 999;
+  pointer-events: none;
+  transition: transform 0.25s;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.error { background: var(--danger); color: #fff; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (min-width: 768px) {
+  .panel {
+    left: 12px; right: auto;
+    top: calc(80px + var(--safe-top));
+    bottom: 12px;
+    width: 400px;
+    max-height: none;
+    border-radius: 16px;
+  }
+  .panel-handle { display: none; }
+  .tabs { padding-top: 12px; }
+  .tab { flex-direction: row; gap: 6px; padding: 12px 8px; font-size: 12px; }
+  .fab-group { bottom: calc(24px + var(--safe-bottom)); right: 24px; }
+  .modal { align-items: center; }
+  .modal-content { border-radius: 20px; }
+}
+@media (min-width: 1200px) {
+  .panel { width: 440px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN SCREEN
+     ============================================================ -->
+<div id="login-screen" class="screen">
+  <div class="login-card">
+    <div class="login-logo">LG</div>
+    <h1>LPU GO Data Studio</h1>
+    <p>Team data collection tool</p>
+    <form id="login-form">
+      <input id="login-email" type="email" placeholder="Email" autocomplete="email" required style="margin-bottom:10px;">
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required style="margin-bottom:14px;">
+      <button type="submit" class="btn-primary" id="btn-login" style="width:100%;">Sign In</button>
+    </form>
+    <div id="login-error" class="login-error"></div>
+    <div class="login-hint">Ask your team lead for login credentials</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN SCREEN
+     ============================================================ -->
+<div id="main-screen" class="screen hidden">
+  <div id="map"></div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="brand-small">
+      <div class="logo">LG</div>
+      <span>LPU GO</span>
+    </div>
+    <div class="user-info">
+      <span id="user-email">—</span>
+      <button class="btn-logout" id="btn-logout" title="Sign out">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Floating buttons -->
+  <div class="fab-group">
+    <button class="fab" id="fab-locate" title="My location">
+      <i class="fa-solid fa-location-crosshairs"></i>
+    </button>
+    <button class="fab active" id="fab-3d" title="Toggle 3D">
+      <i class="fa-solid fa-cube"></i>
+    </button>
+    <button class="fab" id="fab-refresh" title="Refresh">
+      <i class="fa-solid fa-rotate"></i>
+    </button>
+  </div>
+
+  <!-- Panel -->
+  <aside class="panel">
+    <div class="panel-handle"></div>
+
+    <div class="tabs">
+      <button class="tab active" data-mode="point">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>Places</span>
+      </button>
+      <button class="tab" data-mode="path">
+        <i class="fa-solid fa-route"></i>
+        <span>Paths</span>
+      </button>
+      <button class="tab" data-mode="polygon">
+        <i class="fa-solid fa-building"></i>
+        <span>Buildings</span>
+      </button>
+      <button class="tab" data-mode="track">
+        <i class="fa-solid fa-person-walking"></i>
+        <span>Track</span>
+      </button>
+    </div>
+
+    <div class="mode-hint" id="mode-hint">
+      Tap on the map to add a place
+    </div>
+
+    <!-- ===== TRACK PANEL ===== -->
+    <div class="track-panel" id="track-panel">
+      <div class="track-status">
+        <div class="big" id="track-distance">0 m</div>
+        <div class="label">Distance walked</div>
+      </div>
+
+      <div class="accuracy-indicator">
+        <div class="accuracy-dot bad" id="accuracy-dot"></div>
+        <div style="flex:1;">GPS accuracy: <b id="accuracy-text">—</b></div>
+      </div>
+
+      <div class="track-stats-grid">
+        <div class="track-stat">
+          <div class="value" id="track-time">0:00</div>
+          <div class="label">Time</div>
+        </div>
+        <div class="track-stat">
+          <div class="value" id="track-points">0</div>
+          <div class="label">Points</div>
+        </div>
+        <div class="track-stat">
+          <div class="value" id="track-speed">0.0</div>
+          <div class="label">km/h</div>
+        </div>
+      </div>
+
+      <div class="track-buttons">
+        <button class="btn-record" id="btn-record">
+          <i class="fa-solid fa-circle"></i> Start Recording
+        </button>
+        <button class="btn-secondary" id="btn-pause" disabled>
+          <i class="fa-solid fa-pause"></i> Pause
+        </button>
+        <button class="btn-secondary" id="btn-stop" disabled>
+          <i class="fa-solid fa-stop"></i> Stop & Save
+        </button>
+      </div>
+
+      <button class="btn-secondary" id="btn-discard" style="display:none;">
+        <i class="fa-solid fa-trash"></i> Discard Track
+      </button>
+
+      <div class="hint" style="font-size:11px;color:var(--muted);text-align:center;line-height:1.4;">
+        Walk along the path. Points with poor GPS accuracy are automatically filtered.
+        Double-check the blue line before saving.
+      </div>
+    </div>
+
+    <!-- ===== NORMAL LIST ===== -->
+    <div class="list" id="items-list">
+      <div class="list-empty">No items yet — start by clicking the map</div>
+    </div>
+  </aside>
+</div>
+
+<!-- ============================================================
+     SAVE MODAL
+     ============================================================ -->
+<div id="save-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2 id="save-modal-title">Save Item</h2>
+    <form id="save-form">
+      <div id="save-form-fields"></div>
+      <div class="modal-buttons">
+        <button type="button" class="btn-cancel" id="btn-cancel-save">Cancel</button>
+        <button type="submit" class="btn-primary" id="btn-confirm-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div id="toast"></div>
+
+<!-- ============================================================
+     CDN SCRIPTS
+     ============================================================ -->
+<script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script src="config.js"></script>
+
+<script>
+/* ============================================================
+   LPU GO — Data Collection App v2
+   ============================================================ */
+(function() {
+  'use strict';
+
+  const CFG = window.LPU_CONFIG;
+  if (!CFG) { alert('config.js not loaded!'); return; }
+
+  if (CFG.supabaseUrl.includes('YOUR_PROJECT_URL') || CFG.supabaseKey.includes('YOUR_ANON_KEY')) {
+    document.getElementById('login-error').textContent =
+      '⚠️ Edit config.js with your Supabase URL and key';
+    document.getElementById('login-error').style.color = '#f59e0b';
+  }
+
+  const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  const state = {
+    user: null,
+    places: [],
+    paths: [],
+    drawMode: 'point',           // 'point' | 'path' | 'polygon' | 'track'
+    pendingVertices: [],
+    pendingMarkers: [],
+    is3D: true,
+    map: null,
+    saving: false,
+
+    // Track recording
+    isRecording: false,
+    isPaused: false,
+    trackPoints: [],              // [{lng, lat, accuracy, timestamp}]
+    watchId: null,
+    trackStartTime: null,
+    trackPausedAt: null,
+    totalPausedMs: 0,
+    currentPosMarker: null,
+    accuracySource: null,
+    trackLineSource: null,
+    lastAcceptedPoint: null,
+    totalDistance: 0,
+  };
+
+  // ============================================================
+  // DOM HELPERS
+  // ============================================================
+  const $ = (id) => document.getElementById(id);
+  const show = (el) => el.classList.remove('hidden');
+  const hide = (el) => el.classList.add('hidden');
+
+  let toastTimer;
+  function toast(msg, isError) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.classList.toggle('error', !!isError);
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+    );
+  }
+
+  // ============================================================
+  // LOGIN
+  // ============================================================
+  async function checkSession() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) onLogin(session.user);
+  }
+
+  function onLogin(user) {
+    state.user = user;
+    $('user-email').textContent = user.email || 'user';
+    hide($('login-screen'));
+    show($('main-screen'));
+    initMap();
+  }
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('login-email').value.trim();
+    const password = $('login-password').value;
+    if (!email || !password) return;
+
+    $('btn-login').disabled = true;
+    $('btn-login').textContent = 'Signing in…';
+    $('login-error').textContent = '';
+
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      onLogin(data.user);
+    } catch (err) {
+      $('login-error').textContent = err.message || 'Login failed';
+      $('btn-login').disabled = false;
+      $('btn-login').textContent = 'Sign In';
+    }
+  });
+
+  $('btn-logout').addEventListener('click', async () => {
+    if (!confirm('Sign out?')) return;
+    stopWatching();
+    await sb.auth.signOut();
+    location.reload();
+  });
+
+  // ============================================================
+  // MAP INIT
+  // ============================================================
+  function initMap() {
+    if (state.map) return;
+
+    state.map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      center: CFG.center,
+      zoom: CFG.zoom,
+      pitch: 50,
+      bearing: -15,
+      antialias: true,
+    });
+
+    state.map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+    state.map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+
+    state.map.on('load', () => {
+      setupLayers();
+      loadAllData();
+    });
+
+    state.map.on('click', onMapClick);
+    state.map.on('dblclick', (e) => {
+      if (state.drawMode === 'path' || state.drawMode === 'polygon') {
+        e.preventDefault();
+        finishDrawing();
+      }
+    });
+  }
+
+  // ============================================================
+  // LAYERS
+  // ============================================================
+  function setupLayers() {
+    const map = state.map;
+
+    // Paths
+    map.addSource('paths-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    map.addLayer({
+      id: 'paths-casing', type: 'line', source: 'paths-src',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#000', 'line-width': 8, 'line-opacity': 0.4 },
+    });
+    map.addLayer({
+      id: 'paths-line', type: 'line', source: 'paths-src',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#10b981', 'line-width': 4 },
+    });
+
+    // Footprints (3D)
+    map.addSource('footprints-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+    map.addLayer({
+      id: 'footprints-3d', type: 'fill-extrusion', source: 'footprints-src',
+      paint: {
+        'fill-extrusion-color': '#f59e0b',
+        'fill-extrusion-height': ['coalesce', ['get', 'height'], 10],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': 0.7,
+        'fill-extrusion-vertical-gradient': true,
+      },
+    });
+
+    // Temp drawing line
+    map.addSource('temp-line', {
+      type: 'geojson',
+      data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
+    });
+    map.addLayer({
+      id: 'temp-line-layer', type: 'line', source: 'temp-line',
+      paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-dasharray': [2, 2] },
+    });
+
+    // Live track
+    map.addSource('track-src', {
+      type: 'geojson',
+      data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
+    });
+    map.addLayer({
+      id: 'track-line', type: 'line', source: 'track-src',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#3b82f6', 'line-width': 5, 'line-opacity': 0.9 },
+    });
+
+    // Accuracy circle
+    map.addSource('accuracy-src', {
+      type: 'geojson',
+      data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } },
+    });
+    map.addLayer({
+      id: 'accuracy-fill', type: 'fill', source: 'accuracy-src',
+      paint: { 'fill-color': '#3b82f6', 'fill-opacity': 0.12 },
+    });
+    map.addLayer({
+      id: 'accuracy-line', type: 'line', source: 'accuracy-src',
+      paint: { 'line-color': '#3b82f6', 'line-width': 1, 'line-opacity': 0.5 },
+    });
+
+    state.trackLineSource = map.getSource('track-src');
+    state.accuracySource = map.getSource('accuracy-src');
+  }
+
+  // ============================================================
+  // MAP CLICK
+  // ============================================================
+  function onMapClick(e) {
+    if (state.drawMode === 'track') return; // Track mode uses GPS, not taps
+
+    const lng = e.lngLat.lng;
+    const lat = e.lngLat.lat;
+
+    if (state.drawMode === 'point') {
+      openPlaceModal(lat, lng);
+    } else if (state.drawMode === 'path' || state.drawMode === 'polygon') {
+      state.pendingVertices.push([lng, lat]);
+      addPendingVertexMarker(lng, lat);
+      updateTempLine();
+    }
+  }
+
+  function addPendingVertexMarker(lng, lat) {
+    const el = document.createElement('div');
+    el.style.cssText = `
+      width:14px;height:14px;border-radius:50%;
+      background:#3b82f6;border:2px solid #fff;
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
+    `;
+    const m = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
+    state.pendingMarkers.push(m);
+  }
+
+  function updateTempLine() {
+    if (!state.map.getSource('temp-line')) return;
+    const coords = state.pendingVertices.slice();
+    if (state.drawMode === 'polygon' && coords.length >= 3) coords.push(coords[0]);
+    state.map.getSource('temp-line').setData({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: coords },
+    });
+  }
+
+  function clearPending() {
+    state.pendingVertices = [];
+    state.pendingMarkers.forEach(m => m.remove());
+    state.pendingMarkers = [];
+    if (state.map.getSource('temp-line')) {
+      state.map.getSource('temp-line').setData({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [] },
+      });
+    }
+  }
+
+  function finishDrawing() {
+    if (state.pendingVertices.length < 2) { clearPending(); return; }
+    if (state.drawMode === 'path') {
+      openPathModal(state.pendingVertices.slice());
+    } else if (state.drawMode === 'polygon') {
+      if (state.pendingVertices.length < 3) {
+        toast('Need at least 3 points for a building', true);
+        return;
+      }
+      openBuildingModal(state.pendingVertices.slice());
+    }
+  }
+
+  // ============================================================
+  // TRACK RECORDING — LIVE GPS
+  // ============================================================
+  function startWatching() {
+    if (!navigator.geolocation) {
+      toast('GPS not supported on this device', true);
+      return false;
+    }
+
+    state.watchId = navigator.geolocation.watchPosition(
+      onPositionUpdate,
+      onPositionError,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 15000,
+      }
+    );
+    return true;
+  }
+
+  function stopWatching() {
+    if (state.watchId !== null) {
+      navigator.geolocation.clearWatch(state.watchId);
+      state.watchId = null;
+    }
+  }
+
+  function onPositionUpdate(position) {
+    const { latitude, longitude, accuracy, speed } = position.coords;
+    const timestamp = position.timestamp;
+
+    // Update accuracy indicator
+    const dot = $('accuracy-dot');
+    const txt = $('accuracy-text');
+    txt.textContent = accuracy ? Math.round(accuracy) + ' m' : '—';
+    dot.className = 'accuracy-dot ' +
+      (accuracy <= 10 ? 'good' : accuracy <= 25 ? 'ok' : 'bad');
+
+    // Update current position marker & accuracy circle
+    updateCurrentPosition(longitude, latitude, accuracy);
+
+    if (!state.isRecording || state.isPaused) return;
+
+    // Filter: skip if accuracy > 30 m (too noisy)
+    if (accuracy && accuracy > 30) return;
+
+    // Filter: skip if too close to last point (< 2 m)
+    if (state.lastAcceptedPoint) {
+      const d = turf.distance(
+        turf.point([state.lastAcceptedPoint.lng, state.lastAcceptedPoint.lat]),
+        turf.point([longitude, latitude]),
+        { units: 'meters' }
+      );
+      if (d < 2) return;
+      state.totalDistance += d;
+    }
+
+    // Optional smoothing: weighted average with previous point
+    let lng = longitude, lat = latitude;
+    if (state.lastAcceptedPoint) {
+      lng = state.lastAcceptedPoint.lng * 0.6 + longitude * 0.4;
+      lat = state.lastAcceptedPoint.lat * 0.6 + latitude * 0.4;
+    }
+
+    const point = { lng, lat, accuracy: accuracy || 0, timestamp };
+    state.trackPoints.push(point);
+    state.lastAcceptedPoint = point;
+
+    updateTrackOnMap();
+    updateTrackStats(speed);
+  }
+
+  function onPositionError(err) {
+    console.warn('GPS error:', err);
+    toast('GPS error: ' + (err.message || 'unknown'), true);
+  }
+
+  function updateCurrentPosition(lng, lat, accuracy) {
+    // Marker
+    if (!state.currentPosMarker) {
+      const el = document.createElement('div');
+      el.style.cssText = `
+        width:18px;height:18px;border-radius:50%;
+        background:#3b82f6;border:3px solid #fff;
+        box-shadow:0 0 12px rgba(59,130,246,0.8);
+      `;
+      state.currentPosMarker = new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(state.map);
+    } else {
+      state.currentPosMarker.setLngLat([lng, lat]);
+    }
+
+    // Accuracy circle
+    if (state.accuracySource && accuracy) {
+      const circle = turf.circle([lng, lat], accuracy / 1000, { steps: 32, units: 'kilometers' });
+      state.accuracySource.setData(circle);
+    }
+  }
+
+  function updateTrackOnMap() {
+    if (!state.trackLineSource) return;
+    const coords = state.trackPoints.map(p => [p.lng, p.lat]);
+    state.trackLineSource.setData({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: coords },
+    });
+  }
+
+  function updateTrackStats(speed) {
+    const dist = state.totalDistance;
+    $('track-distance').textContent =
+      dist > 1000 ? (dist / 1000).toFixed(2) + ' km' : Math.round(dist) + ' m';
+
+    // Duration (excluding paused time)
+    if (state.trackStartTime) {
+      let elapsed = Date.now() - state.trackStartTime - state.totalPausedMs;
+      if (state.isPaused && state.trackPausedAt) {
+        elapsed -= (Date.now() - state.trackPausedAt);
+      }
+      const mins = Math.floor(elapsed / 60000);
+      const secs = Math.floor((elapsed % 60000) / 1000);
+      $('track-time').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    $('track-points').textContent = state.trackPoints.length;
+
+    // Speed (m/s to km/h)
+    const kmh = speed ? (speed * 3.6).toFixed(1) : '0.0';
+    $('track-speed').textContent = kmh;
+  }
+
+  function startRecording() {
+    if (!startWatching()) return;
+
+    state.isRecording = true;
+    state.isPaused = false;
+    state.trackPoints = [];
+    state.totalDistance = 0;
+    state.trackStartTime = Date.now();
+    state.trackPausedAt = null;
+    state.totalPausedMs = 0;
+    state.lastAcceptedPoint = null;
+
+    $('btn-record').innerHTML = '<i class="fa-solid fa-circle-stop"></i> Recording…';
+    $('btn-record').classList.add('recording');
+    $('btn-record').disabled = true;
+    $('btn-pause').disabled = false;
+    $('btn-stop').disabled = false;
+    $('btn-discard').style.display = 'none';
+
+    updateTrackStats(0);
+    toast('Recording started — walk the path');
+  }
+
+  function pauseRecording() {
+    if (!state.isRecording || state.isPaused) return;
+    state.isPaused = true;
+    state.trackPausedAt = Date.now();
+    $('btn-pause').innerHTML = '<i class="fa-solid fa-play"></i> Resume';
+    $('btn-pause').onclick = resumeRecording;
+    toast('Paused');
+  }
+
+  function resumeRecording() {
+    if (!state.isRecording || !state.isPaused) return;
+    state.isPaused = false;
+    if (state.trackPausedAt) {
+      state.totalPausedMs += Date.now() - state.trackPausedAt;
+      state.trackPausedAt = null;
+    }
+    $('btn-pause').innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+    $('btn-pause').onclick = pauseRecording;
+    toast('Resumed');
+  }
+
+  function stopRecording() {
+    if (!state.isRecording) return;
+
+    stopWatching();
+    state.isRecording = false;
+    state.isPaused = false;
+
+    // Show discard button
+    $('btn-record').innerHTML = '<i class="fa-solid fa-circle"></i> Start New Track';
+    $('btn-record').classList.remove('recording');
+    $('btn-record').disabled = false;
+    $('btn-pause').disabled = true;
+    $('btn-stop').disabled = true;
+    $('btn-discard').style.display = '';
+
+    if (state.trackPoints.length < 2) {
+      toast('Track too short — discard and try again', true);
+      return;
+    }
+
+    openTrackSaveModal();
+  }
+
+  function discardTrack() {
+    if (!confirm('Discard this track?')) return;
+    clearTrack();
+    toast('Discarded');
+  }
+
+  function clearTrack() {
+    state.trackPoints = [];
+    state.totalDistance = 0;
+    state.trackStartTime = null;
+    state.trackPausedAt = null;
+    state.totalPausedMs = 0;
+    state.lastAcceptedPoint = null;
+
+    if (state.trackLineSource) {
+      state.trackLineSource.setData({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [] },
+      });
+    }
+    if (state.accuracySource) {
+      state.accuracySource.setData({
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [[]] },
+      });
+    }
+    if (state.currentPosMarker) {
+      state.currentPosMarker.remove();
+      state.currentPosMarker = null;
+    }
+
+    $('track-distance').textContent = '0 m';
+    $('track-time').textContent = '0:00';
+    $('track-points').textContent = '0';
+    $('track-speed').textContent = '0.0';
+    $('btn-discard').style.display = 'none';
+    $('btn-record').innerHTML = '<i class="fa-solid fa-circle"></i> Start Recording';
+    $('btn-record').classList.remove('recording');
+    $('btn-record').disabled = false;
+    $('btn-pause').disabled = true;
+    $('btn-stop').disabled = true;
+  }
+
+  function openTrackSaveModal() {
+    // Simplify the track for storage
+    const coords = state.trackPoints.map(p => [p.lng, p.lat]);
+    const line = turf.lineString(coords);
+    const simplified = turf.simplify(line, { tolerance: 0.00003, highQuality: true });
+    const finalCoords = simplified.geometry.coordinates;
+
+    const dist = turf.length(simplified, { units: 'meters' });
+    const durationMin = Math.round(
+      (Date.now() - state.trackStartTime - state.totalPausedMs) / 60000
+    );
+
+    openModal('Save Walkway', `
+      <div class="form-field">
+        <label>Name</label>
+        <input id="f-name" type="text" placeholder="e.g. Main Gate → Block 27" required autofocus>
+      </div>
+      <div class="form-field">
+        <label>Notes (optional)</label>
+        <textarea id="f-notes" placeholder="Surface, landmarks, etc…"></textarea>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;font-size:13px;">
+        <b>Track summary:</b><br>
+        📏 ${Math.round(dist)} m &nbsp;·&nbsp; ⏱ ${durationMin} min &nbsp;·&nbsp; 📍 ${finalCoords.length} points
+      </div>
+    `, async () => {
+      const name = $('f-name').value.trim();
+      const notes = $('f-notes').value.trim();
+      if (!name) { toast('Name is required', true); return; }
+
+      const { error } = await sb.from('paths').insert({
+        name,
+        geojson: { type: 'LineString', coordinates: finalCoords },
+        is_indoor: false,
+        is_accessible: true,
+        notes: notes || null,
+        created_by: state.user.id,
+        created_by_email: state.user.email,
+      });
+      if (error) throw error;
+
+      hide($('save-modal'));
+      clearTrack();
+      toast('Walkway saved ✓');
+      await loadAllData();
+    });
+  }
+
+  // ============================================================
+  // MODALS
+  // ============================================================
+  function openModal(title, fieldsHTML, onSubmit) {
+    $('save-modal-title').textContent = title;
+    $('save-form-fields').innerHTML = fieldsHTML;
+    show($('save-modal'));
+
+    const form = $('save-form');
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+
+    newForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (state.saving) return;
+      state.saving = true;
+      $('btn-confirm-save').disabled = true;
+      $('btn-confirm-save').textContent = 'Saving…';
+      try {
+        await onSubmit();
+      } catch (err) {
+        console.error(err);
+        toast('Save failed: ' + (err.message || err), true);
+      } finally {
+        state.saving = false;
+        $('btn-confirm-save').disabled = false;
+        $('btn-confirm-save').textContent = 'Save';
+      }
+    });
+
+    $('btn-cancel-save').onclick = () => {
+      hide($('save-modal'));
+      if (state.drawMode !== 'track') clearPending();
+    };
+  }
+
+  function openPlaceModal(lat, lng) {
+    const catOptions = CFG.categories.map(c =>
+      `<option value="${c.id}">${c.label}</option>`
+    ).join('');
+
+    openModal('Add Place', `
+      <div class="form-field">
+        <label>Name</label>
+        <input id="f-name" type="text" placeholder="e.g. Block 27" required autofocus>
+      </div>
+      <div class="form-field">
+        <label>Category</label>
+        <select id="f-category">${catOptions}</select>
+      </div>
+      <div class="form-field">
+        <label>Notes (optional)</label>
+        <textarea id="f-notes" placeholder="Floor, entrance, other info…"></textarea>
+      </div>
+      <input type="hidden" id="f-lat" value="${lat}">
+      <input type="hidden" id="f-lng" value="${lng}">
+    `, async () => {
+      const name = $('f-name').value.trim();
+      const category = $('f-category').value;
+      const notes = $('f-notes').value.trim();
+      if (!name) { toast('Name is required', true); return; }
+
+      const { error } = await sb.from('places').insert({
+        name, category, lat, lng,
+        notes: notes || null,
+        created_by: state.user.id,
+        created_by_email: state.user.email,
+      });
+      if (error) throw error;
+
+      hide($('save-modal'));
+      toast('Place saved ✓');
+      await loadAllData();
+    });
+  }
+
+  function openPathModal(vertices) {
+    const geom = { type: 'LineString', coordinates: vertices };
+    openModal('Add Walkway', `
+      <div class="form-field">
+        <label>Name (optional)</label>
+        <input id="f-name" type="text" placeholder="e.g. Walkway A" autofocus>
+      </div>
+      <div class="form-field">
+        <label>Notes (optional)</label>
+        <textarea id="f-notes" placeholder="Surface, width, etc…"></textarea>
+      </div>
+      <div class="form-field" style="flex-direction:row;align-items:center;gap:8px;">
+        <input id="f-indoor" type="checkbox" style="width:auto;padding:0;">
+        <label style="text-transform:none;font-size:14px;color:var(--text);margin:0;font-weight:400;">Indoor path</label>
+      </div>
+    `, async () => {
+      const name = $('f-name').value.trim();
+      const notes = $('f-notes').value.trim();
+      const isIndoor = $('f-indoor').checked;
+
+      const { error } = await sb.from('paths').insert({
+        name: name || null,
+        geojson: geom,
+        is_indoor: isIndoor,
+        notes: notes || null,
+        created_by: state.user.id,
+        created_by_email: state.user.email,
+      });
+      if (error) throw error;
+
+      hide($('save-modal'));
+      clearPending();
+      toast('Walkway saved ✓');
+      await loadAllData();
+    });
+  }
+
+  function openBuildingModal(vertices) {
+    const ring = vertices.concat([vertices[0]]);
+    const footprint = { type: 'Polygon', coordinates: [ring] };
+    const centerLng = vertices.reduce((s, v) => s + v[0], 0) / vertices.length;
+    const centerLat = vertices.reduce((s, v) => s + v[1], 0) / vertices.length;
+
+    const catOptions = CFG.categories.map(c =>
+      `<option value="${c.id}">${c.label}</option>`
+    ).join('');
+
+    openModal('Add Building', `
+      <div class="form-field">
+        <label>Name</label>
+        <input id="f-name" type="text" placeholder="e.g. Block 27" required autofocus>
+      </div>
+      <div class="form-field">
+        <label>Category</label>
+        <select id="f-category">${catOptions}</select>
+      </div>
+      <div class="form-field">
+        <label>Height (metres)</label>
+        <input id="f-height" type="number" value="12" min="1" max="200">
+      </div>
+      <div class="form-field">
+        <label>Notes (optional)</label>
+        <textarea id="f-notes" placeholder="Floors, departments, etc…"></textarea>
+      </div>
+    `, async () => {
+      const name = $('f-name').value.trim();
+      const category = $('f-category').value;
+      const height = Number($('f-height').value) || 12;
+      const notes = $('f-notes').value.trim();
+      if (!name) { toast('Name is required', true); return; }
+
+      const { error } = await sb.from('places').insert({
+        name, category,
+        lat: centerLat, lng: centerLng,
+        footprint_geojson: footprint,
+        height_m: height,
+        notes: notes || null,
+        created_by: state.user.id,
+        created_by_email: state.user.email,
+      });
+      if (error) throw error;
+
+      hide($('save-modal'));
+      clearPending();
+      toast('Building saved ✓');
+      await loadAllData();
+    });
+  }
+
+  // ============================================================
+  // EDIT PLACE / BUILDING
+  // ============================================================
+  function openEditModal(item) {
+    const isBuilding = !!item.footprint_geojson;
+    const catOptions = CFG.categories.map(c =>
+      `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`
+    ).join('');
+
+    openModal(isBuilding ? 'Edit Building' : 'Edit Place', `
+      <div class="form-field">
+        <label>Name</label>
+        <input id="f-name" type="text" value="${escapeHtml(item.name)}" required>
+      </div>
+      <div class="form-field">
+        <label>Category</label>
+        <select id="f-category">${catOptions}</select>
+      </div>
+      ${isBuilding ? `
+      <div class="form-field">
+        <label>Height (metres)</label>
+        <input id="f-height" type="number" value="${item.height_m || 12}" min="1" max="200">
+      </div>` : ''}
+      <div class="form-field">
+        <label>Notes</label>
+        <textarea id="f-notes">${escapeHtml(item.notes || '')}</textarea>
+      </div>
+    `, async () => {
+      const name = $('f-name').value.trim();
+      const category = $('f-category').value;
+      const notes = $('f-notes').value.trim();
+      const height = isBuilding ? Number($('f-height').value) || 12 : null;
+      if (!name) { toast('Name is required', true); return; }
+
+      const update = { name, category, notes: notes || null };
+      if (isBuilding) update.height_m = height;
+
+      const { error } = await sb.from('places').update(update).eq('id', item.id);
+      if (error) throw error;
+
+      hide($('save-modal'));
+      toast('Updated ✓');
+      await loadAllData();
+    });
+  }
+
+  // ============================================================
+  // LOAD & RENDER DATA
+  // ============================================================
+  async function loadAllData() {
+    try {
+      const [placesRes, pathsRes] = await Promise.all([
+        sb.from('places').select('*').order('created_at', { ascending: false }),
+        sb.from('paths').select('*').order('created_at', { ascending: false }),
+      ]);
+      if (placesRes.error) throw placesRes.error;
+      if (pathsRes.error) throw pathsRes.error;
+
+      state.places = placesRes.data || [];
+      state.paths = pathsRes.data || [];
+
+      renderPathsOnMap();
+      renderFootprintsOnMap();
+      renderMarkersOnMap();
+      renderList();
+      updateStats();
+    } catch (err) {
+      console.error('Load error:', err);
+      toast('Failed to load data: ' + err.message, true);
+    }
+  }
+
+  let placeMarkers = [];
+
+  function renderMarkersOnMap() {
+    placeMarkers.forEach(m => m.remove());
+    placeMarkers = [];
+
+    state.places.forEach(p => {
+      const cat = CFG.categories.find(c => c.id === p.category) || CFG.categories[CFG.categories.length - 1];
+      const el = document.createElement('div');
+      el.style.cssText = `
+        width:30px;height:30px;border-radius:50%;
+        background:${cat.color};border:2px solid #fff;
+        display:flex;align-items:center;justify-content:center;
+        color:#fff;font-size:14px;font-weight:700;
+        box-shadow:0 2px 8px rgba(0,0,0,0.5);
+        cursor:pointer;
+      `;
+      el.innerHTML = cat.label.split(' ')[0];
+
+      const m = new maplibregl.Marker({ element: el })
+        .setLngLat([p.lng, p.lat])
+        .setPopup(new maplibregl.Popup({ offset: 20, closeButton: false }).setHTML(
+          `<div style="font-family:inherit;min-width:140px;">
+            <b style="color:${cat.color};font-size:14px;">${escapeHtml(p.name)}</b><br>
+            <small style="color:#94a3b8;">${cat.label}</small>
+          </div>`
+        ))
+        .addTo(state.map);
+
+      placeMarkers.push(m);
+    });
+  }
+
+  function renderPathsOnMap() {
+    if (!state.map.getSource('paths-src')) return;
+    const features = state.paths
+      .filter(p => p.geojson)
+      .map(p => ({
+        type: 'Feature',
+        properties: { id: p.id, name: p.name },
+        geometry: p.geojson,
+      }));
+    state.map.getSource('paths-src').setData({
+      type: 'FeatureCollection',
+      features,
+    });
+  }
+
+  function renderFootprintsOnMap() {
+    if (!state.map.getSource('footprints-src')) return;
+    const features = state.places
+      .filter(p => p.footprint_geojson)
+      .map(p => ({
+        type: 'Feature',
+        properties: {
+          id: p.id,
+          name: p.name,
+          height: Number(p.height_m) || 10,
+        },
+        geometry: p.footprint_geojson,
+      }));
+    state.map.getSource('footprints-src').setData({
+      type: 'FeatureCollection',
+      features,
+    });
+  }
+
+  function renderList() {
+    // Only render list when NOT in track mode
+    if (state.drawMode === 'track') return;
+
+    const list = $('items-list');
+    list.style.display = '';
+    $('track-panel').classList.remove('active');
+
+    const items = [];
+
+    state.places.forEach(p => {
+      const cat = CFG.categories.find(c => c.id === p.category) || CFG.categories[CFG.categories.length - 1];
+      const isBuilding = !!p.footprint_geojson;
+      items.push({
+        type: isBuilding ? 'building' : 'place',
+        id: p.id,
+        raw: p,
+        name: p.name,
+        catColor: cat.color,
+        catLabel: cat.label,
+        meta: `${cat.label} · ${p.created_by_email || 'unknown'}`,
+        canDelete: p.created_by === state.user.id,
+        onClick: () => state.map.flyTo({ center: [p.lng, p.lat], zoom: 18, pitch: 55 }),
+      });
+    });
+
+    state.paths.forEach(p => {
+      const coords = p.geojson?.coordinates || [];
+      if (!coords.length) return;
+      const centerLng = coords.reduce((s, c) => s + c[0], 0) / coords.length;
+      const centerLat = coords.reduce((s, c) => s + c[1], 0) / coords.length;
+      items.push({
+        type: 'path',
+        id: p.id,
+        raw: p,
+        name: p.name || 'Unnamed path',
+        catColor: '#10b981',
+        catLabel: 'Walkway',
+        meta: `Walkway · ${p.created_by_email || 'unknown'}`,
+        canDelete: p.created_by === state.user.id,
+        onClick: () => state.map.flyTo({ center: [centerLng, centerLat], zoom: 18, pitch: 50 }),
+      });
+    });
+
+    if (!items.length) {
+      list.innerHTML = '<div class="list-empty">No items yet — click the map to start</div>';
+      return;
+    }
+
+    items.sort((a, b) => {
+      const order = { place: 1, building: 2, path: 3 };
+      return (order[a.type] || 0) - (order[b.type] || 0);
+    });
+
+    list.innerHTML = items.map(it => {
+      const icon = it.type === 'path' ? '🛤' : it.type === 'building' ? '🏢' : '📍';
+      return `
+        <div class="item" data-id="${it.id}" data-type="${it.type}">
+          <div class="item-icon" style="background:${it.catColor}20;color:${it.catColor}">${icon}</div>
+          <div class="item-info">
+            <div class="item-name">${escapeHtml(it.name)}</div>
+            <div class="item-meta">${it.meta}</div>
+          </div>
+          <div class="item-actions">
+            ${it.type !== 'path' ? `<button class="item-btn edit" data-edit="${it.id}" title="Edit"><i class="fa-solid fa-pen"></i></button>` : ''}
+            ${it.canDelete ? `<button class="item-btn danger delete" data-delete="${it.id}" data-type="${it.type}" title="Delete"><i class="fa-solid fa-trash"></i></button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.item').forEach(el => {
+      const id = el.dataset.id;
+      const it = items.find(x => x.id === id);
+      if (!it) return;
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.item-btn')) return;
+        it.onClick();
+      });
+    });
+
+    list.querySelectorAll('.edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const it = items.find(x => x.id === btn.dataset.edit);
+        if (it && it.raw) openEditModal(it.raw);
+      });
+    });
+
+    list.querySelectorAll('.delete').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await deleteItem(btn.dataset.id, btn.dataset.type);
+      });
+    });
+  }
+
+  async function deleteItem(id, type) {
+    if (!confirm('Delete this item?')) return;
+    const table = type === 'path' ? 'paths' : 'places';
+    const { error } = await sb.from(table).delete().eq('id', id);
+    if (error) { toast('Delete failed: ' + error.message, true); return; }
+    toast('Deleted');
+    await loadAllData();
+  }
+
+  function updateStats() {
+    $('stat-places').textContent = state.places.filter(p => !p.footprint_geojson).length;
+    $('stat-paths').textContent = state.paths.length;
+    $('stat-buildings').textContent = state.places.filter(p => p.footprint_geojson).length;
+  }
+
+  // ============================================================
+  // TABS
+  // ============================================================
+  function setupTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const mode = tab.dataset.mode;
+        state.drawMode = mode;
+        clearPending();
+
+        const hints = {
+          point: 'Tap on the map to add a place',
+          path: 'Tap points on the map, double-tap to finish the walkway',
+          polygon: 'Tap points around a building, double-tap to finish',
+          track: 'Walk with your phone to record the path automatically',
+        };
+        $('mode-hint').textContent = hints[mode] || '';
+
+        if (mode === 'track') {
+          $('items-list').style.display = 'none';
+          $('track-panel').classList.add('active');
+          // Stop any ongoing recording when leaving? No, keep it running.
+        } else {
+          $('track-panel').classList.remove('active');
+          renderList();
+        }
+      });
+    });
+  }
+
+  // ============================================================
+  // FABs
+  // ============================================================
+  function setupFabs() {
+    $('fab-locate').addEventListener('click', () => {
+      if (!navigator.geolocation) { toast('GPS unavailable', true); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          state.map.flyTo({
+            center: [pos.coords.longitude, pos.coords.latitude],
+            zoom: 18, pitch: 55,
+          });
+          toast('Located');
+        },
+        () => toast('GPS denied', true),
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    });
+
+    $('fab-3d').addEventListener('click', (e) => {
+      state.is3D = !state.is3D;
+      e.currentTarget.classList.toggle('active', state.is3D);
+      state.map.easeTo({
+        pitch: state.is3D ? 50 : 0,
+        bearing: state.is3D ? -15 : 0,
+        duration: 800,
+      });
+      if (state.map.getLayer('footprints-3d')) {
+        state.map.setLayoutProperty('footprints-3d', 'visibility', state.is3D ? 'visible' : 'none');
+      }
+    });
+
+    $('fab-refresh').addEventListener('click', async () => {
+      toast('Refreshing…');
+      await loadAllData();
+      toast('Done');
+    });
+  }
+
+  // ============================================================
+  // TRACK BUTTONS
+  // ============================================================
+  function setupTrackButtons() {
+    $('btn-record').addEventListener('click', () => {
+      if (state.isRecording) return;
+      startRecording();
+    });
+
+    $('btn-pause').addEventListener('click', () => {
+      if (state.isPaused) resumeRecording();
+      else pauseRecording();
+    });
+
+    $('btn-stop').addEventListener('click', () => {
+      stopRecording();
+    });
+
+    $('btn-discard').addEventListener('click', () => {
+      discardTrack();
+    });
+  }
+
+  // ============================================================
+  // BOOT
+  // ============================================================
+  setupTabs();
+  setupFabs();
+  setupTrackButtons();
+  checkSession();
+})();
+</script>
+</body>
+</html>
