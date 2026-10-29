@@ -9,766 +9,339 @@
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <style>
-/* ============ DESIGN TOKENS ============ */
-:root {
-  --brand: #f59e0b;
-  --brand-hover: #d97706;
-  --success: #10b981;
-  --danger: #ef4444;
-  --info: #3b82f6;
-  --purple: #a855f7;
+:root{
+  --brand:#f59e0b; --brand-hover:#d97706;
+  --success:#10b981; --danger:#ef4444; --info:#3b82f6; --purple:#a855f7;
+  --bg:#0a0e14; --surface:#151b23; --surface-2:#1c242f; --surface-3:#252f3d;
+  --text:#f8fafc; --text-muted:#94a3b8; --text-dim:#64748b;
+  --border:rgba(255,255,255,0.08); --border-strong:rgba(255,255,255,0.16);
+  --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+  --topbar-h:56px; --bottomnav-h:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:15px;line-height:1.5;}
+button,input,select,textarea{font-family:inherit;font-size:inherit;}
+button{cursor:pointer;border:none;background:none;color:inherit;}
+.hidden{display:none !important;}
 
-  --bg: #0a0e14;
-  --surface: #151b23;
-  --surface-2: #1c242f;
-  --surface-3: #252f3d;
+/* LOGIN */
+#login-screen{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(ellipse at top,#1c242f 0%,#0a0e14 70%);}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:36px 26px;
+  width:100%;max-width:400px;display:flex;flex-direction:column;gap:18px;box-shadow:0 24px 64px rgba(0,0,0,0.6);}
+.login-logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(135deg,var(--brand),var(--brand-hover));
+  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:30px;color:#000;margin:0 auto 8px;
+  box-shadow:0 12px 32px rgba(245,158,11,0.4);}
+.login-card h1{margin:0;text-align:center;font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+.login-card .subtitle{text-align:center;color:var(--text-muted);font-size:13px;margin:0 0 8px;}
+.login-card input{background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  padding:14px 16px;border-radius:12px;font-size:15px;outline:none;width:100%;transition:border-color .15s,background .15s;}
+.login-card input:focus{border-color:var(--brand);background:var(--surface-3);}
+.btn-primary{background:var(--brand);color:#000;padding:14px 20px;border-radius:12px;font-weight:700;font-size:15px;width:100%;
+  transition:background .15s,transform .08s;}
+.btn-primary:hover{background:var(--brand-hover);}
+.btn-primary:active{transform:scale(0.98);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+#login-error{min-height:18px;font-size:13px;color:var(--danger);text-align:center;}
+.login-hint{font-size:11px;color:var(--text-dim);text-align:center;margin-top:4px;}
 
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+/* MAIN */
+#main-screen{position:fixed;inset:0;}
+#map{position:absolute;inset:0;z-index:1;}
 
-  --border: rgba(255,255,255,0.08);
-  --border-strong: rgba(255,255,255,0.16);
+/* TOP BAR */
+.top-bar{position:absolute;top:calc(10px + var(--safe-top));left:10px;right:10px;height:var(--topbar-h);z-index:20;
+  background:rgba(21,27,35,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:16px;display:flex;align-items:center;padding:0 8px 0 12px;gap:8px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+.brand-badge{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;flex-shrink:0;}
+.brand-badge .mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand-hover));
+  display:flex;align-items:center;justify-content:center;color:#000;font-size:13px;font-weight:900;}
+.brand-badge span{display:none;}
+.search-bar{flex:1;height:40px;min-width:0;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;display:flex;align-items:center;padding:0 12px;gap:8px;transition:border-color .15s;}
+.search-bar:focus-within{border-color:var(--brand);}
+.search-bar i{color:var(--text-dim);font-size:14px;flex-shrink:0;}
+.search-bar input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;}
+.search-bar input::placeholder{color:var(--text-dim);}
+.user-btn{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--info),var(--purple));
+  color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .1s;}
+.user-btn:active{transform:scale(0.94);}
 
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+/* ========== DRAW TOOLBAR (NEW) ========== */
+.draw-toolbar{
+  position:fixed;
+  top:calc(var(--topbar-h) + 20px + var(--safe-top));
+  left:12px;right:12px;
+  z-index:30;
+  background:var(--surface);
+  border:1px solid var(--border-strong);
+  border-radius:16px;
+  box-shadow:0 12px 32px rgba(0,0,0,0.55);
+  padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  animation:slide-down .25s ease-out;
+}
+@keyframes slide-down{
+  from{opacity:0;transform:translateY(-8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.draw-info{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);}
+.draw-info i{color:var(--brand);flex-shrink:0;}
+.draw-info .draw-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.draw-count{background:var(--brand);color:#000;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:800;flex-shrink:0;}
+.draw-count.hidden{display:none;}
+.draw-actions{display:flex;gap:6px;flex-shrink:0;}
+.draw-btn{min-width:40px;height:40px;padding:0 12px;border-radius:10px;background:var(--surface-2);
+  border:1px solid var(--border);color:var(--text);font-weight:700;font-size:13px;
+  display:flex;align-items:center;justify-content:center;gap:4px;transition:transform .1s,background .12s;}
+.draw-btn:active{transform:scale(0.94);}
+.draw-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.draw-btn.draw-finish{background:var(--success);color:#fff;border-color:var(--success);}
+.draw-btn.draw-finish:disabled{background:var(--surface-2);color:var(--text-dim);border-color:var(--border);}
+.draw-btn.draw-finish.hidden{display:none;}
+.draw-btn.draw-cancel{background:rgba(239,68,68,0.15);color:#fca5a5;border-color:rgba(239,68,68,0.3);}
 
-  --topbar-h: 56px;
-  --bottomnav-h: 64px;
-}
+/* FABs */
+.fab-stack{position:absolute;right:12px;bottom:calc(var(--bottomnav-h) + 16px + var(--safe-bottom));
+  z-index:18;display:flex;flex-direction:column;gap:10px;}
+.fab{width:50px;height:50px;border-radius:15px;background:var(--surface);border:1px solid var(--border);color:var(--text);
+  display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  transition:transform .12s,background .12s;}
+.fab:active{transform:scale(0.9);}
+.fab.active{background:var(--brand);color:#000;border-color:var(--brand);}
+.fab.fab-add{background:var(--brand);color:#000;border-color:var(--brand);
+  box-shadow:0 6px 24px rgba(245,158,11,0.5);font-size:22px;}
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body {
-  margin: 0; padding: 0; height: 100%; overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg); color: var(--text);
-  -webkit-font-smoothing: antialiased; font-size: 15px; line-height: 1.5;
-}
-button, input, select, textarea { font-family: inherit; font-size: inherit; }
-button { cursor: pointer; border: none; background: none; color: inherit; }
-.hidden { display: none !important; }
+/* BOTTOM NAV */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:calc(var(--bottomnav-h) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);z-index:20;background:rgba(21,27,35,0.98);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--border);
+  display:grid;grid-template-columns:repeat(5,1fr);align-items:center;}
+.nav-btn{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--text-dim);font-size:10px;font-weight:600;position:relative;transition:color .12s;}
+.nav-btn i{font-size:18px;}
+.nav-btn.active{color:var(--brand);}
+.nav-btn.active::before{content:'';position:absolute;top:2px;left:50%;transform:translateX(-50%);
+  width:28px;height:3px;background:var(--brand);border-radius:2px;}
+.nav-btn.nav-add i{width:42px;height:42px;border-radius:13px;background:var(--brand);color:#000;
+  display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 6px 20px rgba(245,158,11,0.5);
+  transition:transform .1s;}
+.nav-btn.nav-add:active i{transform:scale(0.9);}
+.nav-btn.nav-add span{color:var(--brand);}
 
-/* ============ LOGIN ============ */
-#login-screen {
-  position: fixed; inset: 0; z-index: 1000;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px;
-  background: radial-gradient(ellipse at top, #1c242f 0%, #0a0e14 70%);
-}
-.login-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 24px; padding: 36px 26px;
-  width: 100%; max-width: 400px;
-  display: flex; flex-direction: column; gap: 18px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-}
-.login-logo {
-  width: 76px; height: 76px; border-radius: 22px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 30px; color: #000;
-  margin: 0 auto 8px;
-  box-shadow: 0 12px 32px rgba(245,158,11,0.4);
-}
-.login-card h1 {
-  margin: 0; text-align: center;
-  font-size: 24px; font-weight: 800; letter-spacing: -0.02em;
-}
-.login-card .subtitle {
-  text-align: center; color: var(--text-muted);
-  font-size: 13px; margin: 0 0 8px;
-}
-.login-card input {
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text); padding: 14px 16px; border-radius: 12px;
-  font-size: 15px; outline: none; width: 100%;
-  transition: border-color 0.15s, background 0.15s;
-}
-.login-card input:focus { border-color: var(--brand); background: var(--surface-3); }
-.btn-primary {
-  background: var(--brand); color: #000;
-  padding: 14px 20px; border-radius: 12px;
-  font-weight: 700; font-size: 15px; width: 100%;
-  transition: background 0.15s, transform 0.08s;
-}
-.btn-primary:hover { background: var(--brand-hover); }
-.btn-primary:active { transform: scale(0.98); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-#login-error { min-height: 18px; font-size: 13px; color: var(--danger); text-align: center; }
-.login-hint { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 4px; }
+/* SHEET */
+.sheet{position:fixed;left:0;right:0;bottom:0;height:calc(88vh - var(--safe-bottom));z-index:22;
+  background:var(--surface);border-radius:22px 22px 0 0;box-shadow:0 -8px 40px rgba(0,0,0,0.6);
+  display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);}
+.sheet.open{transform:translateY(0);}
+.sheet-handle{width:40px;height:4px;background:var(--border-strong);border-radius:2px;margin:10px auto 6px;flex-shrink:0;}
+.sheet-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:4px 12px 10px;flex-shrink:0;
+  border-bottom:1px solid var(--border);}
+.sheet-tab{padding:10px 8px;border-radius:10px;background:transparent;color:var(--text-muted);
+  font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:background .15s,color .15s;}
+.sheet-tab i{font-size:13px;}
+.sheet-tab.active{background:var(--brand);color:#000;}
+.sheet-body{flex:1;overflow-y:auto;padding:0 14px 20px;-webkit-overflow-scrolling:touch;}
 
-/* ============ MAIN ============ */
-#main-screen { position: fixed; inset: 0; }
-#map { position: absolute; inset: 0; z-index: 1; }
+.section-header{display:flex;align-items:center;justify-content:space-between;margin:16px 0 10px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);}
+.section-header .count{background:var(--surface-3);color:var(--text);padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;}
 
-/* ---- Top Bar ---- */
-.top-bar {
-  position: absolute;
-  top: calc(10px + var(--safe-top));
-  left: 10px; right: 10px;
-  height: var(--topbar-h);
-  z-index: 20;
-  background: rgba(21,27,35,0.95);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border); border-radius: 16px;
-  display: flex; align-items: center;
-  padding: 0 8px 0 12px; gap: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.brand-badge {
-  display: flex; align-items: center; gap: 8px;
-  font-weight: 800; font-size: 14px; flex-shrink: 0;
-}
-.brand-badge .mark {
-  width: 32px; height: 32px; border-radius: 9px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-hover));
-  display: flex; align-items: center; justify-content: center;
-  color: #000; font-size: 13px; font-weight: 900;
-}
-.brand-badge span { display: none; }
-.search-bar {
-  flex: 1; height: 40px; min-width: 0;
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 10px; display: flex; align-items: center;
-  padding: 0 12px; gap: 8px;
-  transition: border-color 0.15s;
-}
-.search-bar:focus-within { border-color: var(--brand); }
-.search-bar i { color: var(--text-dim); font-size: 14px; flex-shrink: 0; }
-.search-bar input {
-  flex: 1; min-width: 0; background: transparent;
-  border: none; outline: none; color: var(--text); font-size: 14px;
-}
-.search-bar input::placeholder { color: var(--text-dim); }
-.user-btn {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: linear-gradient(135deg, var(--info), var(--purple));
-  color: #fff; font-weight: 800; font-size: 15px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: transform 0.1s;
-}
-.user-btn:active { transform: scale(0.94); }
+.filter-chips{display:flex;gap:6px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none;}
+.filter-chips::-webkit-scrollbar{display:none;}
+.chip{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);padding:7px 12px;
+  border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:all .12s;}
+.chip.active{background:var(--brand);border-color:var(--brand);color:#000;}
+.chip .badge{display:inline-block;background:rgba(0,0,0,0.2);padding:1px 6px;border-radius:8px;margin-left:4px;font-size:10px;}
+.chip.active .badge{background:rgba(0,0,0,0.3);color:#000;}
 
-/* ---- Mode indicator ---- */
-.mode-indicator {
-  position: absolute;
-  top: calc(var(--topbar-h) + 22px + var(--safe-top));
-  left: 50%; transform: translateX(-50%);
-  z-index: 25;
-  background: var(--info); color: #fff;
-  padding: 10px 14px; border-radius: 30px;
-  display: flex; align-items: center; gap: 10px;
-  font-size: 13px; font-weight: 600;
-  box-shadow: 0 8px 24px rgba(59,130,246,0.4);
-  max-width: 90vw; white-space: nowrap;
-  animation: slide-down 0.2s ease-out;
-}
-@keyframes slide-down {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-.mode-indicator button {
-  width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255,255,255,0.25); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; flex-shrink: 0;
-}
+.items-grid{display:flex;flex-direction:column;gap:8px;}
+.item-card{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:12px;
+  display:flex;gap:12px;align-items:center;transition:border-color .12s,background .12s,transform .1s;cursor:pointer;}
+.item-card:hover{border-color:var(--border-strong);background:var(--surface-3);}
+.item-card:active{transform:scale(0.99);}
+.item-thumb{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;overflow:hidden;background:var(--surface-3);}
+.item-thumb img{width:100%;height:100%;object-fit:cover;}
+.item-main{flex:1;min-width:0;}
+.item-title{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-code{background:var(--surface-3);color:var(--text-muted);padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0;}
+.item-sub{font-size:12px;color:var(--text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-actions{display:flex;gap:2px;flex-shrink:0;}
+.icon-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-muted);font-size:13px;transition:background .12s,color .12s;}
+.icon-btn:hover{background:var(--surface-3);color:var(--text);}
+.icon-btn.danger:hover{color:var(--danger);}
 
-/* ---- FAB stack ---- */
-.fab-stack {
-  position: absolute;
-  right: 12px;
-  bottom: calc(var(--bottomnav-h) + 16px + var(--safe-bottom));
-  z-index: 18;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.fab {
-  width: 50px; height: 50px;
-  border-radius: 15px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-  transition: transform 0.12s, background 0.12s;
-}
-.fab:active { transform: scale(0.9); }
-.fab.active { background: var(--brand); color: #000; border-color: var(--brand); }
-.fab.fab-add {
-  background: var(--brand); color: #000; border-color: var(--brand);
-  box-shadow: 0 6px 24px rgba(245,158,11,0.5);
-  font-size: 22px;
-}
+.empty-state{padding:40px 20px;text-align:center;}
+.empty-state .emoji{font-size:44px;margin-bottom:12px;opacity:0.9;}
+.empty-state h3{font-size:16px;font-weight:700;margin:0 0 6px;color:var(--text);}
+.empty-state p{font-size:13px;color:var(--text-muted);margin:0;line-height:1.5;}
+.empty-state .cta{margin-top:20px;background:var(--brand);color:#000;padding:12px 24px;border-radius:12px;
+  font-weight:700;font-size:14px;display:inline-flex;align-items:center;gap:8px;}
 
-/* ---- Bottom nav ---- */
-.bottom-nav {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: calc(var(--bottomnav-h) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  z-index: 20;
-  background: rgba(21,27,35,0.98);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  align-items: center;
-}
-.nav-btn {
-  height: 100%; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 3px;
-  color: var(--text-dim); font-size: 10px; font-weight: 600;
-  position: relative; transition: color 0.12s;
-}
-.nav-btn i { font-size: 18px; }
-.nav-btn.active { color: var(--brand); }
-.nav-btn.active::before {
-  content: '';
-  position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
-  width: 28px; height: 3px; background: var(--brand); border-radius: 2px;
-}
-.nav-btn.nav-add i {
-  width: 42px; height: 42px; border-radius: 13px;
-  background: var(--brand); color: #000;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 6px 20px rgba(245,158,11,0.5);
-  transition: transform 0.1s;
-}
-.nav-btn.nav-add:active i { transform: scale(0.9); }
-.nav-btn.nav-add span { color: var(--brand); }
+.skeleton{background:linear-gradient(90deg,var(--surface-2) 25%,var(--surface-3) 50%,var(--surface-2) 75%);
+  background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:10px;height:68px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 
-/* ---- Sheet (drawer / sidebar) ---- */
-.sheet {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: calc(88vh - var(--safe-bottom));
-  z-index: 22;
-  background: var(--surface);
-  border-radius: 22px 22px 0 0;
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
-  display: flex; flex-direction: column;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sheet.open { transform: translateY(0); }
-.sheet-handle {
-  width: 40px; height: 4px;
-  background: var(--border-strong); border-radius: 2px;
-  margin: 10px auto 6px; flex-shrink: 0;
-}
-.sheet-tabs {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 4px; padding: 4px 12px 10px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-}
-.sheet-tab {
-  padding: 10px 8px;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  transition: background 0.15s, color 0.15s;
-}
-.sheet-tab i { font-size: 13px; }
-.sheet-tab.active {
-  background: var(--brand);
-  color: #000;
-}
-.sheet-body {
-  flex: 1; overflow-y: auto;
-  padding: 0 14px 20px;
-  -webkit-overflow-scrolling: touch;
-}
+/* TRACK */
+.track-hero{background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(59,130,246,0.08));
+  border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:24px 20px;text-align:center;margin:16px 0;}
+.track-hero .distance{font-size:44px;font-weight:900;color:var(--success);
+  font-family:'SF Mono','Space Grotesk',monospace;line-height:1;letter-spacing:-0.03em;}
+.track-hero .distance-label{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--text-muted);margin-top:8px;font-weight:700;}
+.accuracy-pill{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:10px;
+  padding:10px 14px;margin-bottom:14px;font-size:13px;}
+.accuracy-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;transition:background .2s,box-shadow .2s;}
+.accuracy-dot.good{background:var(--success);box-shadow:0 0 10px var(--success);}
+.accuracy-dot.ok{background:var(--brand);box-shadow:0 0 10px var(--brand);}
+.accuracy-dot.bad{background:var(--danger);box-shadow:0 0 10px var(--danger);}
+.track-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+.metric-card{background:var(--surface-2);border-radius:10px;padding:12px 8px;text-align:center;}
+.metric-card .value{font-size:16px;font-weight:800;}
+.metric-card .label{font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-dim);margin-top:2px;}
+.btn-record{width:100%;padding:18px;border-radius:14px;background:var(--success);color:#fff;
+  font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-bottom:10px;box-shadow:0 8px 24px rgba(16,185,129,0.4);transition:all .15s;}
+.btn-record:active{transform:scale(0.98);}
+.btn-record.recording{background:var(--danger);box-shadow:0 8px 24px rgba(239,68,68,0.4);}
+.btn-record:disabled{opacity:0.5;cursor:not-allowed;}
+.track-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-secondary{padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);
+  color:var(--text);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .12s,border-color .12s;}
+.btn-secondary:hover{background:var(--surface-3);border-color:var(--border-strong);}
+.btn-secondary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-danger-outline{width:100%;padding:12px;border-radius:12px;background:transparent;
+  border:1px solid rgba(239,68,68,0.4);color:#fca5a5;font-weight:700;font-size:14px;margin-top:10px;}
+.btn-danger-outline:hover{background:rgba(239,68,68,0.1);}
 
-/* ---- Section headers ---- */
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin: 16px 0 10px;
-  font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--text-dim);
-}
-.section-header .count {
-  background: var(--surface-3); color: var(--text);
-  padding: 2px 8px; border-radius: 6px;
-  font-size: 11px; font-weight: 700;
-}
+/* STATS */
+.stats-hero{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.stat-block{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:16px;}
+.stat-block .value{font-size:28px;font-weight:900;line-height:1;}
+.stat-block .label{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-top:6px;font-weight:700;}
+.progress-ring{width:56px;height:56px;border-radius:50%;background:conic-gradient(var(--brand) var(--pct,0%),var(--surface-3) 0);
+  display:flex;align-items:center;justify-content:center;position:relative;}
+.progress-ring::before{content:'';position:absolute;inset:6px;border-radius:50%;background:var(--surface-2);}
+.progress-ring span{position:relative;z-index:1;font-size:13px;font-weight:800;}
+.category-bars{margin-top:8px;}
+.cat-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;}
+.cat-row .label{flex:1;display:flex;align-items:center;gap:8px;}
+.cat-row .bar-track{flex:2;height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden;}
+.cat-row .bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+.cat-row .count{font-size:12px;font-weight:700;color:var(--text-muted);min-width:30px;text-align:right;}
 
-/* ---- Filter chips ---- */
-.filter-chips {
-  display: flex; gap: 6px;
-  overflow-x: auto;
-  padding: 12px 0 6px;
-  scrollbar-width: none;
-}
-.filter-chips::-webkit-scrollbar { display: none; }
-.chip {
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 7px 12px; border-radius: 20px;
-  font-size: 12px; font-weight: 600;
-  white-space: nowrap; flex-shrink: 0;
-  transition: all 0.12s;
-}
-.chip.active {
-  background: var(--brand); border-color: var(--brand); color: #000;
-}
-.chip .badge {
-  display: inline-block; background: rgba(0,0,0,0.2);
-  padding: 1px 6px; border-radius: 8px;
-  margin-left: 4px; font-size: 10px;
-}
-.chip.active .badge { background: rgba(0,0,0,0.3); color: #000; }
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);z-index:100;animation:fade-in .2s ease-out;}
+@keyframes fade-in{from{opacity:0;}to{opacity:1;}}
+.modal{position:fixed;z-index:101;left:0;right:0;bottom:0;max-height:92vh;background:var(--surface);
+  border-radius:22px 22px 0 0;display:flex;flex-direction:column;animation:slide-up .28s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 -12px 40px rgba(0,0,0,0.6);}
+@keyframes slide-up{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;}
+.modal-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:10px;}
+.modal-close{width:34px;height:34px;border-radius:10px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;}
+.modal-close:hover{background:var(--surface-3);color:var(--text);}
+.modal-body{flex:1;overflow-y:auto;padding:20px;-webkit-overflow-scrolling:touch;}
+.modal-footer{padding:16px 20px calc(16px + var(--safe-bottom));border-top:1px solid var(--border);
+  display:flex;gap:10px;flex-shrink:0;background:var(--surface);}
+.modal-footer .btn-primary{flex:1;width:auto;}
+.modal-footer .btn-cancel{flex:0 0 40%;padding:14px;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--text);font-weight:700;font-size:15px;}
 
-/* ---- Item cards ---- */
-.items-grid { display: flex; flex-direction: column; gap: 8px; }
-.item-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px;
-  display: flex; gap: 12px; align-items: center;
-  transition: border-color 0.12s, background 0.12s, transform 0.1s;
-  cursor: pointer;
-}
-.item-card:hover { border-color: var(--border-strong); background: var(--surface-3); }
-.item-card:active { transform: scale(0.99); }
-.item-thumb {
-  width: 44px; height: 44px; border-radius: 11px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-  overflow: hidden; background: var(--surface-3);
-}
-.item-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.item-main { flex: 1; min-width: 0; }
-.item-title {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 14px; font-weight: 700;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.item-code {
-  background: var(--surface-3); color: var(--text-muted);
-  padding: 1px 6px; border-radius: 4px;
-  font-size: 10px; font-weight: 700; flex-shrink: 0;
-}
-.item-sub {
-  font-size: 12px; color: var(--text-muted);
-  margin-top: 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.item-actions { display: flex; gap: 2px; flex-shrink: 0; }
-.icon-btn {
-  width: 32px; height: 32px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted); font-size: 13px;
-  transition: background 0.12s, color 0.12s;
-}
-.icon-btn:hover { background: var(--surface-3); color: var(--text); }
-.icon-btn.danger:hover { color: var(--danger); }
+/* FORM */
+.form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.form-field:last-child{margin-bottom:0;}
+.form-field label{font-size:12px;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+.form-field label .req{color:var(--danger);}
+.form-field input,.form-field select,.form-field textarea{background:var(--surface-2);
+  border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;
+  font-size:15px;outline:none;width:100%;transition:border-color .15s,background .15s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{
+  border-color:var(--brand);background:var(--surface-3);}
+.form-field textarea{resize:vertical;min-height:70px;font-family:inherit;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0;}
+.chip-toggle{background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);
+  padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600;transition:all .12s;}
+.chip-toggle.selected{background:var(--brand);border-color:var(--brand);color:#000;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+.toggle{position:relative;width:46px;height:26px;background:var(--surface-3);border-radius:13px;
+  cursor:pointer;transition:background .15s;flex-shrink:0;}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:var(--text);
+  border-radius:50%;transition:transform .2s;}
+.toggle.on{background:var(--success);}
+.toggle.on::after{transform:translateX(20px);background:#fff;}
 
-/* ---- Empty state ---- */
-.empty-state { padding: 40px 20px; text-align: center; }
-.empty-state .emoji { font-size: 44px; margin-bottom: 12px; opacity: 0.9; }
-.empty-state h3 {
-  font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--text);
-}
-.empty-state p {
-  font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5;
-}
-.empty-state .cta {
-  margin-top: 20px;
-  background: var(--brand); color: #000;
-  padding: 12px 24px; border-radius: 12px;
-  font-weight: 700; font-size: 14px;
-  display: inline-flex; align-items: center; gap: 8px;
-}
+/* QUICK ACTIONS */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.quick-action{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;
+  padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+  transition:border-color .15s,background .15s,transform .1s;}
+.quick-action:active{transform:scale(0.96);}
+.quick-action:hover{border-color:var(--brand);background:var(--surface-3);}
+.quick-action .icon-wrap{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;
+  justify-content:center;font-size:24px;}
+.quick-action .label{font-size:14px;font-weight:700;color:var(--text);}
+.quick-action .sub{font-size:12px;color:var(--text-dim);}
 
-/* ---- Loading ---- */
-.skeleton {
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 10px; height: 68px;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+/* TOAST */
+#toast{position:fixed;left:50%;bottom:calc(var(--bottomnav-h) + 90px + var(--safe-bottom));
+  transform:translateX(-50%) translateY(100px);z-index:9999;background:var(--brand);color:#000;
+  padding:12px 20px;border-radius:12px;font-weight:700;font-size:13px;max-width:90vw;text-align:center;
+  box-shadow:0 12px 32px rgba(0,0,0,0.5);transition:transform .28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.error{background:var(--danger);color:#fff;}
 
-/* ---- Track UI ---- */
-.track-hero {
-  background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(59,130,246,0.08));
-  border: 1px solid rgba(16,185,129,0.3);
-  border-radius: 20px;
-  padding: 24px 20px;
-  text-align: center;
-  margin: 16px 0;
-}
-.track-hero .distance {
-  font-size: 44px; font-weight: 900; color: var(--success);
-  font-family: 'SF Mono', 'Space Grotesk', monospace;
-  line-height: 1; letter-spacing: -0.03em;
-}
-.track-hero .distance-label {
-  font-size: 11px; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--text-muted);
-  margin-top: 8px; font-weight: 700;
-}
-.accuracy-pill {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--surface-2); border-radius: 10px;
-  padding: 10px 14px; margin-bottom: 14px; font-size: 13px;
-}
-.accuracy-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  flex-shrink: 0; transition: background 0.2s, box-shadow 0.2s;
-}
-.accuracy-dot.good { background: var(--success); box-shadow: 0 0 10px var(--success); }
-.accuracy-dot.ok   { background: var(--brand); box-shadow: 0 0 10px var(--brand); }
-.accuracy-dot.bad  { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
-
-.track-metrics {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px; margin-bottom: 16px;
-}
-.metric-card {
-  background: var(--surface-2); border-radius: 10px;
-  padding: 12px 8px; text-align: center;
-}
-.metric-card .value { font-size: 16px; font-weight: 800; }
-.metric-card .label {
-  font-size: 10px; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--text-dim); margin-top: 2px;
-}
-.btn-record {
-  width: 100%; padding: 18px; border-radius: 14px;
-  background: var(--success); color: #fff;
-  font-size: 16px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
-  gap: 10px; margin-bottom: 10px;
-  box-shadow: 0 8px 24px rgba(16,185,129,0.4);
-  transition: all 0.15s;
-}
-.btn-record:active { transform: scale(0.98); }
-.btn-record.recording {
-  background: var(--danger); box-shadow: 0 8px 24px rgba(239,68,68,0.4);
-}
-.btn-record:disabled { opacity: 0.5; cursor: not-allowed; }
-.track-controls {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-}
-.btn-secondary {
-  padding: 14px; border-radius: 12px;
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text); font-weight: 700; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: background 0.12s, border-color 0.12s;
-}
-.btn-secondary:hover { background: var(--surface-3); border-color: var(--border-strong); }
-.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-danger-outline {
-  width: 100%; padding: 12px; border-radius: 12px;
-  background: transparent; border: 1px solid rgba(239,68,68,0.4);
-  color: #fca5a5; font-weight: 700; font-size: 14px; margin-top: 10px;
-}
-.btn-danger-outline:hover { background: rgba(239,68,68,0.1); }
-
-/* ---- Stats UI ---- */
-.stats-hero {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin: 16px 0;
-}
-.stat-block {
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 14px; padding: 16px;
-}
-.stat-block .value { font-size: 28px; font-weight: 900; line-height: 1; }
-.stat-block .label {
-  font-size: 11px; text-transform: uppercase;
-  letter-spacing: 0.06em; color: var(--text-muted);
-  margin-top: 6px; font-weight: 700;
-}
-.progress-ring {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: conic-gradient(var(--brand) var(--pct, 0%), var(--surface-3) 0);
-  display: flex; align-items: center; justify-content: center;
-  position: relative;
-}
-.progress-ring::before {
-  content: ''; position: absolute; inset: 6px;
-  border-radius: 50%; background: var(--surface-2);
-}
-.progress-ring span {
-  position: relative; z-index: 1;
-  font-size: 13px; font-weight: 800;
-}
-
-.category-bars { margin-top: 8px; }
-.cat-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 0; font-size: 13px;
-}
-.cat-row .label { flex: 1; display: flex; align-items: center; gap: 8px; }
-.cat-row .bar-track {
-  flex: 2; height: 8px; background: var(--surface-3);
-  border-radius: 4px; overflow: hidden;
-}
-.cat-row .bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
-.cat-row .count {
-  font-size: 12px; font-weight: 700;
-  color: var(--text-muted); min-width: 30px; text-align: right;
-}
-
-/* ---- Modal ---- */
-.modal-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  z-index: 100;
-  animation: fade-in 0.2s ease-out;
-}
-@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-.modal {
-  position: fixed; z-index: 101;
-  left: 0; right: 0; bottom: 0;
-  max-height: 92vh;
-  background: var(--surface);
-  border-radius: 22px 22px 0 0;
-  display: flex; flex-direction: column;
-  animation: slide-up 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -12px 40px rgba(0,0,0,0.6);
-}
-@keyframes slide-up {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-}
-.modal-title {
-  font-size: 17px; font-weight: 800;
-  display: flex; align-items: center; gap: 10px;
-}
-.modal-close {
-  width: 34px; height: 34px; border-radius: 10px;
-  background: var(--surface-2);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-muted); font-size: 14px;
-}
-.modal-close:hover { background: var(--surface-3); color: var(--text); }
-.modal-body {
-  flex: 1; overflow-y: auto;
-  padding: 20px;
-  -webkit-overflow-scrolling: touch;
-}
-.modal-footer {
-  padding: 16px 20px calc(16px + var(--safe-bottom));
-  border-top: 1px solid var(--border);
-  display: flex; gap: 10px;
-  flex-shrink: 0; background: var(--surface);
-}
-.modal-footer .btn-primary { flex: 1; width: auto; }
-.modal-footer .btn-cancel {
-  flex: 0 0 40%; padding: 14px; border-radius: 12px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text); font-weight: 700; font-size: 15px;
-}
-
-/* ---- Form ---- */
-.form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.form-field:last-child { margin-bottom: 0; }
-.form-field label {
-  font-size: 12px; font-weight: 600; color: var(--text-muted);
-  display: flex; align-items: center; gap: 6px;
-}
-.form-field label .req { color: var(--danger); }
-.form-field input,
-.form-field select,
-.form-field textarea {
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text); padding: 12px 14px; border-radius: 10px;
-  font-size: 15px; outline: none; width: 100%;
-  transition: border-color 0.15s, background 0.15s;
-}
-.form-field input:focus,
-.form-field select:focus,
-.form-field textarea:focus {
-  border-color: var(--brand); background: var(--surface-3);
-}
-.form-field textarea { resize: vertical; min-height: 70px; font-family: inherit; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* ---- Chips ---- */
-.chip-group { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0; }
-.chip-toggle {
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text-muted); padding: 8px 14px; border-radius: 20px;
-  font-size: 13px; font-weight: 600;
-  transition: all 0.12s;
-}
-.chip-toggle.selected {
-  background: var(--brand); border-color: var(--brand); color: #000;
-}
-
-/* ---- Toggle ---- */
-.toggle-row {
-  display: flex; align-items: center;
-  justify-content: space-between; padding: 10px 0;
-}
-.toggle {
-  position: relative; width: 46px; height: 26px;
-  background: var(--surface-3); border-radius: 13px;
-  cursor: pointer; transition: background 0.15s; flex-shrink: 0;
-}
-.toggle::after {
-  content: ''; position: absolute;
-  top: 3px; left: 3px; width: 20px; height: 20px;
-  background: var(--text); border-radius: 50%;
-  transition: transform 0.2s;
-}
-.toggle.on { background: var(--success); }
-.toggle.on::after { transform: translateX(20px); background: #fff; }
-
-/* ---- Quick actions ---- */
-.quick-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.quick-action {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px 16px;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 10px; text-align: center;
-  transition: border-color 0.15s, background 0.15s, transform 0.1s;
-}
-.quick-action:active { transform: scale(0.96); }
-.quick-action:hover { border-color: var(--brand); background: var(--surface-3); }
-.quick-action .icon-wrap {
-  width: 56px; height: 56px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px;
-}
-.quick-action .label { font-size: 14px; font-weight: 700; color: var(--text); }
-.quick-action .sub { font-size: 12px; color: var(--text-dim); }
-
-/* ---- Toast ---- */
-#toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(var(--bottomnav-h) + 90px + var(--safe-bottom));
-  transform: translateX(-50%) translateY(100px);
-  z-index: 9999;
-  background: var(--brand); color: #000;
-  padding: 12px 20px; border-radius: 12px;
-  font-weight: 700; font-size: 13px;
-  max-width: 90vw; text-align: center;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-#toast.show { transform: translateX(-50%) translateY(0); }
-#toast.error { background: var(--danger); color: #fff; }
-
-/* ============================================================
-   TABLET & DESKTOP
-   ============================================================ */
-@media (min-width: 768px) {
-  .brand-badge span { display: block; }
-  .top-bar {
-    top: calc(16px + var(--safe-top));
-    left: calc(440px + 16px);        /* make room for sidebar */
-    right: 16px;
-    height: 60px;
+/* ========== TABLET & DESKTOP ========== */
+@media(min-width:768px){
+  .brand-badge span{display:block;}
+  .top-bar{top:calc(16px + var(--safe-top));left:calc(440px + 16px);right:16px;height:60px;}
+  .search-bar{height:44px;}
+  .user-btn{width:44px;height:44px;}
+  .sheet{left:16px;top:calc(16px + var(--safe-top));bottom:16px;right:auto;width:420px;
+    height:auto;border-radius:20px;transform:none !important;box-shadow:0 12px 40px rgba(0,0,0,0.5);}
+  .sheet-handle{display:none;}
+  .sheet-tabs{padding:14px 16px 12px;}
+  .sheet-body{padding:0 16px 20px;}
+  .bottom-nav{display:none;}
+  .fab-stack{bottom:calc(24px + var(--safe-bottom));right:24px;gap:12px;}
+  .fab{width:54px;height:54px;font-size:20px;}
+  .draw-toolbar{left:calc(440px + 24px);right:16px;top:calc(60px + 32px + var(--safe-top));}
+  .modal{left:50%;bottom:auto;top:50%;transform:translate(-50%,-50%);
+    width:560px;max-height:85vh;border-radius:20px;animation:modal-pop .24s ease-out;}
+  @keyframes modal-pop{
+    from{opacity:0;transform:translate(-50%,-48%);}
+    to{opacity:1;transform:translate(-50%,-50%);}
   }
-  .search-bar { height: 44px; }
-  .user-btn { width: 44px; height: 44px; }
-
-  /* Sheet becomes fixed sidebar */
-  .sheet {
-    left: 16px;
-    top: calc(16px + var(--safe-top));
-    bottom: 16px;
-    right: auto;
-    width: 420px;
-    height: auto;
-    border-radius: 20px;
-    transform: none !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-  }
-  .sheet-handle { display: none; }
-  .sheet-tabs { padding: 14px 16px 12px; }
-  .sheet-body { padding: 0 16px 20px; }
-
-  /* Hide bottom nav */
-  .bottom-nav { display: none; }
-
-  /* FABs positioned bottom-right */
-  .fab-stack {
-    bottom: calc(24px + var(--safe-bottom));
-    right: 24px;
-    gap: 12px;
-  }
-  .fab { width: 54px; height: 54px; font-size: 20px; }
-
-  .mode-indicator {
-    top: calc(60px + 34px + var(--safe-top));
-    left: calc(440px + 16px + (100vw - 440px - 32px) / 2);
-    transform: translateX(-50%);
-  }
-
-  .modal {
-    left: 50%; bottom: auto; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 560px;
-    max-height: 85vh;
-    border-radius: 20px;
-    animation: modal-pop 0.24s ease-out;
-  }
-  @keyframes modal-pop {
-    from { opacity: 0; transform: translate(-50%, -48%); }
-    to   { opacity: 1; transform: translate(-50%, -50%); }
-  }
-
-  #toast { bottom: 24px; }
-
-  .quick-actions { grid-template-columns: 1fr 1fr; }
+  #toast{bottom:24px;}
+  .quick-actions{grid-template-columns:1fr 1fr;}
 }
-
-@media (min-width: 1200px) {
-  .sheet { width: 460px; }
-  .top-bar { left: calc(460px + 16px); }
-  .mode-indicator {
-    left: calc(460px + 16px + (100vw - 460px - 32px) / 2);
-  }
-  .quick-actions { grid-template-columns: 1fr 1fr; }
+@media(min-width:1200px){
+  .sheet{width:460px;}
+  .top-bar{left:calc(460px + 16px);}
+  .draw-toolbar{left:calc(460px + 24px);}
 }
-
-/* ============================================================
-   LARGE DESKTOP — wider sheet, more breathing room
-   ============================================================ */
-@media (min-width: 1400px) {
-  .sheet { width: 500px; }
-  .top-bar { left: calc(500px + 16px); }
-  .mode-indicator {
-    left: calc(500px + 16px + (100vw - 500px - 32px) / 2);
-  }
+@media(min-width:1400px){
+  .sheet{width:500px;}
+  .top-bar{left:calc(500px + 16px);}
+  .draw-toolbar{left:calc(500px + 24px);}
 }
 </style>
 </head>
 <body>
 
-<!-- ============ LOGIN ============ -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">LG</div>
@@ -784,11 +357,11 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
   </div>
 </div>
 
-<!-- ============ MAIN ============ -->
+<!-- MAIN -->
 <div id="main-screen" class="hidden">
   <div id="map"></div>
 
-  <!-- Top bar -->
+  <!-- TOP BAR -->
   <header class="top-bar">
     <div class="brand-badge">
       <div class="mark">LG</div>
@@ -803,11 +376,18 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
     </button>
   </header>
 
-  <!-- Mode indicator -->
-  <div class="mode-indicator hidden" id="mode-indicator">
-    <i class="fa-solid fa-crosshairs"></i>
-    <span id="mode-text">Tap map to add</span>
-    <button id="mode-cancel"><i class="fa-solid fa-xmark"></i></button>
+  <!-- DRAW TOOLBAR (NEW) -->
+  <div class="draw-toolbar hidden" id="draw-toolbar">
+    <div class="draw-info">
+      <i class="fa-solid fa-crosshairs"></i>
+      <span class="draw-text" id="draw-text">Tap map to add points</span>
+      <span class="draw-count" id="draw-count">0</span>
+    </div>
+    <div class="draw-actions">
+      <button class="draw-btn" id="draw-undo" title="Undo last point"><i class="fa-solid fa-rotate-left"></i></button>
+      <button class="draw-btn draw-finish" id="draw-finish" title="Finish drawing">Finish</button>
+      <button class="draw-btn draw-cancel" id="draw-cancel" title="Cancel"><i class="fa-solid fa-xmark"></i></button>
+    </div>
   </div>
 
   <!-- FABs -->
@@ -817,1402 +397,754 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
     <button class="fab active" id="fab-3d" title="Toggle 3D"><i class="fa-solid fa-cube"></i></button>
   </div>
 
-  <!-- Sheet / Sidebar -->
+  <!-- SHEET -->
   <aside class="sheet" id="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-tabs">
-      <button class="sheet-tab active" data-view="list">
-        <i class="fa-solid fa-list"></i> List
-      </button>
-      <button class="sheet-tab" data-view="track">
-        <i class="fa-solid fa-person-walking"></i> Track
-      </button>
-      <button class="sheet-tab" data-view="stats">
-        <i class="fa-solid fa-chart-pie"></i> Stats
-      </button>
+      <button class="sheet-tab active" data-view="list"><i class="fa-solid fa-list"></i> List</button>
+      <button class="sheet-tab" data-view="track"><i class="fa-solid fa-person-walking"></i> Track</button>
+      <button class="sheet-tab" data-view="stats"><i class="fa-solid fa-chart-pie"></i> Stats</button>
     </div>
     <div class="sheet-body" id="sheet-body"></div>
   </aside>
 
-  <!-- Bottom nav (mobile only) -->
+  <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-btn active" data-nav="map">
-      <i class="fa-solid fa-map"></i><span>Map</span>
-    </button>
-    <button class="nav-btn" data-nav="list">
-      <i class="fa-solid fa-list"></i><span>List</span>
-    </button>
-    <button class="nav-btn nav-add" data-nav="add">
-      <i class="fa-solid fa-plus"></i><span>Add</span>
-    </button>
-    <button class="nav-btn" data-nav="track">
-      <i class="fa-solid fa-person-walking"></i><span>Track</span>
-    </button>
-    <button class="nav-btn" data-nav="stats">
-      <i class="fa-solid fa-chart-pie"></i><span>Stats</span>
-    </button>
+    <button class="nav-btn active" data-nav="map"><i class="fa-solid fa-map"></i><span>Map</span></button>
+    <button class="nav-btn" data-nav="list"><i class="fa-solid fa-list"></i><span>List</span></button>
+    <button class="nav-btn nav-add" data-nav="add"><i class="fa-solid fa-plus"></i><span>Add</span></button>
+    <button class="nav-btn" data-nav="track"><i class="fa-solid fa-person-walking"></i><span>Track</span></button>
+    <button class="nav-btn" data-nav="stats"><i class="fa-solid fa-chart-pie"></i><span>Stats</span></button>
   </nav>
 </div>
 
-<!-- Modal system -->
 <div class="modal-backdrop hidden" id="modal-backdrop"></div>
 <div class="modal hidden" id="modal"></div>
-
-<!-- Toast -->
 <div id="toast"></div>
 
-<!-- Scripts -->
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <script src="config.js"></script>
 
 <script>
-(function() {
-  'use strict';
+(function(){
+'use strict';
 
-  const CFG = window.LPU_CONFIG;
-  if (!CFG) { alert('config.js missing!'); return; }
+const CFG = window.LPU_CONFIG;
+if (!CFG) { alert('config.js missing!'); return; }
+if (CFG.supabaseUrl.includes('YOUR_PROJECT') || CFG.supabaseKey.includes('YOUR_ANON')) {
+  document.getElementById('login-error').innerHTML =
+    '<span style="color:var(--brand);">⚠️ Edit config.js — add Supabase URL &amp; anon key</span>';
+}
+const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
 
-  if (CFG.supabaseUrl.includes('YOUR_PROJECT') || CFG.supabaseKey.includes('YOUR_ANON')) {
-    document.getElementById('login-error').innerHTML =
-      '<span style="color:var(--brand);">⚠️ Edit config.js — add Supabase URL &amp; anon key</span>';
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  user: null, places: [], paths: [],
+  activeView: 'list', activeCategory: 'all', searchQuery: '',
+  drawMode: null, pendingVertices: [], pendingMarkers: [],
+  is3D: true, map: null, loading: true,
+  isRecording: false, isPaused: false, trackPoints: [], totalDistance: 0,
+  trackStartTime: null, trackPausedAt: null, totalPausedMs: 0,
+  watchId: null, lastAcceptedPoint: null, currentPosMarker: null,
+};
+
+// ============================================================
+// UTILS
+// ============================================================
+const $ = id => document.getElementById(id);
+let toastTimer;
+function toast(msg, isError) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.toggle('error', !!isError);
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function catInfo(id) {
+  return CFG.categories.find(c => c.id === id) || CFG.categories[CFG.categories.length - 1];
+}
+function fmtDist(m) { return m > 1000 ? (m/1000).toFixed(2) + ' km' : Math.round(m) + ' m'; }
+const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
+
+// ============================================================
+// AUTH
+// ============================================================
+async function checkSession() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) onLogin(session.user);
+  } catch(e) { console.warn(e); }
+}
+function onLogin(user) {
+  state.user = user;
+  $('user-initial').textContent = (user.email || 'U').charAt(0).toUpperCase();
+  $('login-screen').classList.add('hidden');
+  $('main-screen').classList.remove('hidden');
+  initMap();
+  if (isDesktop()) openSheet();
+}
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = $('login-email').value.trim();
+  const password = $('login-password').value;
+  if (!email || !password) return;
+  $('btn-login').disabled = true;
+  $('btn-login').textContent = 'Signing in…';
+  $('login-error').textContent = '';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    onLogin(data.user);
+  } catch(err) {
+    $('login-error').textContent = err.message || 'Login failed';
+    $('btn-login').disabled = false;
+    $('btn-login').textContent = 'Sign In';
   }
+});
+$('user-btn').addEventListener('click', () => {
+  if (confirm('Sign out?')) { stopWatching(); sb.auth.signOut().then(() => location.reload()); }
+});
 
-  const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
-
-  // ============================================================
-  // STATE
-  // ============================================================
-  const state = {
-    user: null,
-    places: [],
-    paths: [],
-    activeView: 'list',
-    activeCategory: 'all',
-    searchQuery: '',
-    drawMode: null,
-    pendingVertices: [],
-    pendingMarkers: [],
-    is3D: true,
-    map: null,
-    loading: true,
-
-    // Track
-    isRecording: false,
-    isPaused: false,
-    trackPoints: [],
-    totalDistance: 0,
-    trackStartTime: null,
-    trackPausedAt: null,
-    totalPausedMs: 0,
-    watchId: null,
-    lastAcceptedPoint: null,
-    currentPosMarker: null,
-  };
-
-  // ============================================================
-  // UTILS
-  // ============================================================
-  const $ = id => document.getElementById(id);
-  let toastTimer;
-  function toast(msg, isError) {
-    const el = $('toast');
-    el.textContent = msg;
-    el.classList.toggle('error', !!isError);
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
-  }
-  function esc(s) {
-    return String(s ?? '').replace(/[&<>"']/g, c =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-  function catInfo(id) {
-    return CFG.categories.find(c => c.id === id) || CFG.categories[CFG.categories.length - 1];
-  }
-  function fmtDist(m) {
-    return m > 1000 ? (m / 1000).toFixed(2) + ' km' : Math.round(m) + ' m';
-  }
-  const isDesktop = () => window.matchMedia('(min-width: 768px)').matches;
-
-  // ============================================================
-  // AUTH
-  // ============================================================
-  async function checkSession() {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) onLogin(session.user);
-    } catch (e) { console.warn(e); }
-  }
-
-  function onLogin(user) {
-    state.user = user;
-    $('user-initial').textContent = (user.email || 'U').charAt(0).toUpperCase();
-    $('login-screen').classList.add('hidden');
-    $('main-screen').classList.remove('hidden');
-    initMap();
-    // On desktop the sheet is always visible → open it
-    if (isDesktop()) openSheet();
-  }
-
-  $('login-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = $('login-email').value.trim();
-    const password = $('login-password').value;
-    if (!email || !password) return;
-
-    $('btn-login').disabled = true;
-    $('btn-login').textContent = 'Signing in…';
-    $('login-error').textContent = '';
-
-    try {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      onLogin(data.user);
-    } catch (err) {
-      $('login-error').textContent = err.message || 'Login failed';
-      $('btn-login').disabled = false;
-      $('btn-login').textContent = 'Sign In';
-    }
+// ============================================================
+// MAP
+// ============================================================
+function initMap() {
+  if (state.map) return;
+  state.map = new maplibregl.Map({
+    container: 'map',
+    style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    center: CFG.center, zoom: CFG.zoom, pitch: 45, bearing: -15, antialias: true,
   });
+  state.map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+  state.map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+  state.map.on('load', () => { setupLayers(); loadAllData(); });
+  state.map.on('click', onMapClick);
+  // NO dblclick handler — Finish button replaces it
+}
 
-  $('user-btn').addEventListener('click', () => {
-    if (confirm('Sign out?')) {
-      stopWatching();
-      sb.auth.signOut().then(() => location.reload());
-    }
-  });
+function setupLayers() {
+  const map = state.map;
+  map.addSource('paths-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'paths-casing', type: 'line', source: 'paths-src',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.5 } });
+  map.addLayer({ id: 'paths-line', type: 'line', source: 'paths-src',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': '#10b981', 'line-width': 4 } });
 
-  // ============================================================
-  // MAP
-  // ============================================================
-  function initMap() {
-    if (state.map) return;
+  map.addSource('footprints-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'footprints-3d', type: 'fill-extrusion', source: 'footprints-src',
+    paint: {
+      'fill-extrusion-color': '#f59e0b',
+      'fill-extrusion-height': ['coalesce', ['get', 'height'], 12],
+      'fill-extrusion-base': 0, 'fill-extrusion-opacity': 0.75,
+      'fill-extrusion-vertical-gradient': true,
+    } });
 
-    state.map = new maplibregl.Map({
-      container: 'map',
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: CFG.center,
-      zoom: CFG.zoom,
-      pitch: 45,
-      bearing: -15,
-      antialias: true,
-    });
+  map.addSource('temp-line', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
+  map.addLayer({ id: 'temp-line-layer', type: 'line', source: 'temp-line',
+    paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-dasharray': [2, 2] } });
 
-    state.map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
-    state.map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+  map.addSource('track-src', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } } });
+  map.addLayer({ id: 'track-line', type: 'line', source: 'track-src',
+    layout: { 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': '#3b82f6', 'line-width': 5, 'line-opacity': 0.9 } });
 
-    state.map.on('load', () => {
-      setupLayers();
-      loadAllData();
-    });
+  map.addSource('accuracy-src', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } } });
+  map.addLayer({ id: 'accuracy-fill', type: 'fill', source: 'accuracy-src',
+    paint: { 'fill-color': '#3b82f6', 'fill-opacity': 0.12 } });
+  map.addLayer({ id: 'accuracy-line', type: 'line', source: 'accuracy-src',
+    paint: { 'line-color': '#3b82f6', 'line-width': 1, 'line-opacity': 0.5 } });
+}
 
-    state.map.on('click', onMapClick);
-    state.map.on('dblclick', e => {
-      if (state.drawMode === 'building' || state.drawMode === 'path') {
-        e.preventDefault();
-        finishDrawing();
-      }
-    });
+// ============================================================
+// MAP CLICK — with distance filter to prevent double-tap duplicates
+// ============================================================
+function onMapClick(e) {
+  const lng = e.lngLat.lng;
+  const lat = e.lngLat.lat;
+
+  if (state.drawMode === 'place') {
+    openPlaceForm(lat, lng);
+    return;
   }
 
-  function setupLayers() {
-    const map = state.map;
-
-    map.addSource('paths-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({
-      id: 'paths-casing', type: 'line', source: 'paths-src',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': '#000', 'line-width': 7, 'line-opacity': 0.5 },
-    });
-    map.addLayer({
-      id: 'paths-line', type: 'line', source: 'paths-src',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': '#10b981', 'line-width': 4 },
-    });
-
-    map.addSource('footprints-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-    map.addLayer({
-      id: 'footprints-3d', type: 'fill-extrusion', source: 'footprints-src',
-      paint: {
-        'fill-extrusion-color': '#f59e0b',
-        'fill-extrusion-height': ['coalesce', ['get', 'height'], 12],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.75,
-        'fill-extrusion-vertical-gradient': true,
-      },
-    });
-
-    map.addSource('temp-line', {
-      type: 'geojson',
-      data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
-    });
-    map.addLayer({
-      id: 'temp-line-layer', type: 'line', source: 'temp-line',
-      paint: { 'line-color': '#3b82f6', 'line-width': 3, 'line-dasharray': [2, 2] },
-    });
-
-    map.addSource('track-src', {
-      type: 'geojson',
-      data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } },
-    });
-    map.addLayer({
-      id: 'track-line', type: 'line', source: 'track-src',
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': '#3b82f6', 'line-width': 5, 'line-opacity': 0.9 },
-    });
-
-    map.addSource('accuracy-src', {
-      type: 'geojson',
-      data: { type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } },
-    });
-    map.addLayer({
-      id: 'accuracy-fill', type: 'fill', source: 'accuracy-src',
-      paint: { 'fill-color': '#3b82f6', 'fill-opacity': 0.12 },
-    });
-    map.addLayer({
-      id: 'accuracy-line', type: 'line', source: 'accuracy-src',
-      paint: { 'line-color': '#3b82f6', 'line-width': 1, 'line-opacity': 0.5 },
-    });
-  }
-
-  // ============================================================
-  // MAP CLICK
-  // ============================================================
-  function onMapClick(e) {
-    if (state.drawMode === 'place') {
-      openPlaceForm(e.lngLat.lat, e.lngLat.lng);
-    } else if (state.drawMode === 'building' || state.drawMode === 'path') {
-      state.pendingVertices.push([e.lngLat.lng, e.lngLat.lat]);
-      addPendingMarker(e.lngLat.lng, e.lngLat.lat);
-      updateTempLine();
-    }
-  }
-
-  function addPendingMarker(lng, lat) {
-    const el = document.createElement('div');
-    el.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#3b82f6;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);';
-    const m = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
-    state.pendingMarkers.push(m);
-  }
-
-  function updateTempLine() {
-    if (!state.map.getSource('temp-line')) return;
-    const c = state.pendingVertices.slice();
-    if (state.drawMode === 'building' && c.length >= 3) c.push(c[0]);
-    state.map.getSource('temp-line').setData({
-      type: 'Feature', geometry: { type: 'LineString', coordinates: c },
-    });
-  }
-
-  function clearPending() {
-    state.pendingVertices = [];
-    state.pendingMarkers.forEach(m => m.remove());
-    state.pendingMarkers = [];
-    if (state.map && state.map.getSource('temp-line')) {
-      state.map.getSource('temp-line').setData({
-        type: 'Feature', geometry: { type: 'LineString', coordinates: [] },
-      });
-    }
-  }
-
-  function finishDrawing() {
-    if (state.drawMode === 'path' && state.pendingVertices.length >= 2) {
-      openPathForm(state.pendingVertices.slice());
-    } else if (state.drawMode === 'building' && state.pendingVertices.length >= 3) {
-      openBuildingForm(state.pendingVertices.slice());
-    } else {
-      toast('Need more points', true);
-    }
-  }
-
-  // ============================================================
-  // LOAD DATA
-  // ============================================================
-  async function loadAllData() {
-    try {
-      const [places, paths] = await Promise.all([
-        sb.from('places').select('*').order('created_at', { ascending: false }),
-        sb.from('paths').select('*').order('created_at', { ascending: false }),
-      ]);
-      if (places.error) throw places.error;
-      if (paths.error) throw paths.error;
-
-      state.places = places.data || [];
-      state.paths = paths.data || [];
-      state.loading = false;
-
-      renderPaths();
-      renderFootprints();
-      renderMarkers();
-      renderCurrentView();
-    } catch (err) {
-      console.error(err);
-      state.loading = false;
-      toast('Load failed: ' + err.message, true);
-      renderCurrentView();
-    }
-  }
-
-  let placeMarkers = [];
-  function renderMarkers() {
-    placeMarkers.forEach(m => m.remove());
-    placeMarkers = [];
-    state.places.forEach(p => {
-      const cat = catInfo(p.category);
-      const el = document.createElement('div');
-      el.style.cssText = `width:32px;height:32px;border-radius:50%;background:${cat.color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;`;
-      el.innerHTML = `<i class="fa-solid ${cat.icon}"></i>`;
-      const m = new maplibregl.Marker({ element: el })
-        .setLngLat([p.lng, p.lat])
-        .setPopup(new maplibregl.Popup({ offset: 22, closeButton: false }).setHTML(
-          `<div style="font-family:inherit;min-width:160px;">
-            <div style="color:${cat.color};font-weight:800;font-size:14px;">${esc(p.name)}</div>
-            <div style="color:#94a3b8;font-size:12px;margin-top:3px;">${cat.label}${p.short_code ? ' · ' + esc(p.short_code) : ''}</div>
-          </div>`
-        ))
-        .addTo(state.map);
-      placeMarkers.push(m);
-    });
-  }
-
-  function renderPaths() {
-    if (!state.map.getSource('paths-src')) return;
-    const features = state.paths.filter(p => p.geojson).map(p => ({
-      type: 'Feature',
-      properties: { id: p.id, name: p.name },
-      geometry: p.geojson,
-    }));
-    state.map.getSource('paths-src').setData({ type: 'FeatureCollection', features });
-  }
-
-  function renderFootprints() {
-    if (!state.map.getSource('footprints-src')) return;
-    const features = state.places.filter(p => p.footprint_geojson).map(p => ({
-      type: 'Feature',
-      properties: { height: Number(p.height_m) || 12 },
-      geometry: p.footprint_geojson,
-    }));
-    state.map.getSource('footprints-src').setData({ type: 'FeatureCollection', features });
-  }
-
-  // ============================================================
-  // SHEET CONTROL
-  // ============================================================
-  function openSheet() {
-    $('sheet').classList.add('open');
-  }
-  function closeSheet() {
-    if (isDesktop()) return;  // never close on desktop
-    $('sheet').classList.remove('open');
-  }
-
-  function setActiveTab(view) {
-    document.querySelectorAll('.sheet-tab').forEach(t => {
-      t.classList.toggle('active', t.dataset.view === view);
-    });
-    document.querySelectorAll('.nav-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.nav === view);
-    });
-    state.activeView = view;
-  }
-
-  // ============================================================
-  // TAB / NAV WIRING
-  // ============================================================
-  document.querySelectorAll('.sheet-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      setActiveTab(tab.dataset.view);
-      renderCurrentView();
-    });
-  });
-
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.nav;
-      if (view === 'map') {
-        closeSheet();
-        setActiveTab('map');
-        return;
-      }
-      if (view === 'add') {
-        openAddMenu();
-        return;
-      }
-      setActiveTab(view);
-      renderCurrentView();
-      openSheet();
-    });
-  });
-
-  // ============================================================
-  // RENDER CURRENT VIEW
-  // ============================================================
-  function renderCurrentView() {
-    if (state.loading) {
-      $('sheet-body').innerHTML = `
-        <div class="section-header"><span>Loading…</span></div>
-        <div class="items-grid">
-          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-        </div>`;
-      return;
-    }
-    if (state.activeView === 'track') renderTrackView();
-    else if (state.activeView === 'stats') renderStatsView();
-    else renderListView();
-  }
-
-  // ============================================================
-  // LIST VIEW
-  // ============================================================
-  function renderListView() {
-    const q = state.searchQuery.toLowerCase();
-    const filteredPlaces = state.places.filter(p => {
-      if (state.activeCategory !== 'all' && p.category !== state.activeCategory) return false;
-      if (!q) return true;
-      return (p.name + ' ' + (p.short_code || '') + ' ' + (p.full_name || '') + ' ' + (p.description || '')).toLowerCase().includes(q);
-    });
-    const filteredPaths = q ? [] : state.paths;
-
-    // Category counts
-    const counts = { all: state.places.length };
-    CFG.categories.forEach(c => counts[c.id] = 0);
-    state.places.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
-
-    const chips = [
-      `<button class="chip ${state.activeCategory === 'all' ? 'active' : ''}" data-cat="all">
-        All <span class="badge">${counts.all}</span>
-      </button>`,
-      ...CFG.categories.filter(c => counts[c.id] > 0 || state.activeCategory === c.id).map(c => `
-        <button class="chip ${state.activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">
-          ${c.label} <span class="badge">${counts[c.id]}</span>
-        </button>
-      `)
-    ].join('');
-
-    const itemsHTML = [
-      ...filteredPlaces.map(p => renderItemCard(p, 'place')),
-      ...filteredPaths.map(p => renderItemCard(p, 'path')),
-    ].join('');
-
-    const total = filteredPlaces.length + filteredPaths.length;
-
-    $('sheet-body').innerHTML = `
-      <div class="filter-chips">${chips}</div>
-      <div class="section-header">
-        <span>${q ? 'Search results' : 'All items'}</span>
-        <span class="count">${total}</span>
-      </div>
-      ${total === 0
-        ? `<div class="empty-state">
-            <div class="emoji">📭</div>
-            <h3>${q ? 'No matches' : 'No items yet'}</h3>
-            <p>${q ? 'Try a different search term' : 'Start collecting data for LPU campus'}</p>
-            ${!q ? `<button class="cta" onclick="window.openAddMenu()"><i class="fa-solid fa-plus"></i> Add first item</button>` : ''}
-          </div>`
-        : `<div class="items-grid">${itemsHTML}</div>`
-      }
-    `;
-
-    document.querySelectorAll('.filter-chips .chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        state.activeCategory = chip.dataset.cat;
-        renderListView();
-      });
-    });
-
-    bindItemActions();
-  }
-
-  function renderItemCard(item, type) {
-    const isPath = type === 'path';
-    const cat = isPath
-      ? { color: '#10b981', icon: 'fa-route', label: 'Walkway' }
-      : catInfo(item.category);
-    const title = isPath ? (item.name || 'Unnamed path') : item.name;
-    const code = !isPath && item.short_code ? `<span class="item-code">${esc(item.short_code)}</span>` : '';
-    const isBuilding = !isPath && !!item.footprint_geojson;
-
-    let sub = '';
-    if (isPath) {
-      const coords = item.geojson?.coordinates || [];
-      const dist = coords.length > 1 ? turf.length(turf.lineString(coords), { units: 'meters' }) : 0;
-      sub = `${item.path_type || 'footpath'} · ${fmtDist(dist)} · ${item.created_by_email || ''}`;
-    } else {
-      sub = `${cat.label}${isBuilding ? ' · Building' : ''} · ${item.created_by_email || ''}`;
+  if (state.drawMode === 'building' || state.drawMode === 'path') {
+    // Skip if within 3m of last point (kills accidental double-tap duplicates)
+    if (state.pendingVertices.length > 0) {
+      const last = state.pendingVertices[state.pendingVertices.length - 1];
+      const d = turf.distance(turf.point(last), turf.point([lng, lat]), { units: 'meters' });
+      if (d < 3) return;
     }
 
-    const photo = item.photos && item.photos[0]
-      ? `<img src="${esc(item.photos[0])}" alt="">`
-      : `<i class="fa-solid ${cat.icon}" style="color:${cat.color};"></i>`;
+    state.pendingVertices.push([lng, lat]);
+    const isFirst = state.pendingVertices.length === 1;
+    addPendingMarker(lng, lat, isFirst);
+    updateTempLine();
+    updateDrawUI();
+  }
+}
 
-    const canDelete = item.created_by === state.user.id;
-    const editBtn = isPath ? '' : `<button class="icon-btn" data-edit="${item.id}"><i class="fa-solid fa-pen"></i></button>`;
-    const delBtn = canDelete ? `<button class="icon-btn danger" data-delete="${item.id}" data-type="${type}"><i class="fa-solid fa-trash"></i></button>` : '';
+function addPendingMarker(lng, lat, isFirst) {
+  const el = document.createElement('div');
+  const bg = isFirst ? '#10b981' : '#3b82f6';
+  const size = isFirst ? 20 : 14;
+  el.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${bg};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.5);`;
+  const m = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
+  state.pendingMarkers.push(m);
+}
 
-    return `
-      <div class="item-card" data-id="${item.id}" data-type="${type}">
-        <div class="item-thumb" style="background:${cat.color}20;">${photo}</div>
-        <div class="item-main">
-          <div class="item-title">${code}${esc(title)}</div>
-          <div class="item-sub">${esc(sub)}</div>
-        </div>
-        <div class="item-actions">${editBtn}${delBtn}</div>
-      </div>
-    `;
+function updateTempLine() {
+  if (!state.map.getSource('temp-line')) return;
+  const c = state.pendingVertices.slice();
+  if (state.drawMode === 'building' && c.length >= 3) c.push(c[0]);
+  state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: c } });
+}
+
+function clearPending() {
+  state.pendingVertices = [];
+  state.pendingMarkers.forEach(m => m.remove());
+  state.pendingMarkers = [];
+  if (state.map && state.map.getSource('temp-line')) {
+    state.map.getSource('temp-line').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+  }
+}
+
+function updateDrawUI() {
+  const count = state.pendingVertices.length;
+  const countEl = $('draw-count');
+  if (countEl) countEl.textContent = count;
+
+  const undoBtn = $('draw-undo');
+  if (undoBtn) undoBtn.disabled = count === 0;
+
+  const finishBtn = $('draw-finish');
+  if (finishBtn) {
+    const min = state.drawMode === 'building' ? 3 : 2;
+    finishBtn.disabled = count < min;
   }
 
-  function bindItemActions() {
-    document.querySelectorAll('.item-card').forEach(card => {
-      card.addEventListener('click', e => {
-        if (e.target.closest('.icon-btn')) return;
-        flyToItem(card.dataset.id, card.dataset.type);
-      });
-    });
-    document.querySelectorAll('[data-edit]').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const item = state.places.find(p => p.id === btn.dataset.edit);
-        if (item) openEditForm(item);
-      });
-    });
-    document.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.addEventListener('click', async e => {
-        e.stopPropagation();
-        if (!confirm('Delete this item?')) return;
-        const table = btn.dataset.type === 'path' ? 'paths' : 'places';
-        const { error } = await sb.from(table).delete().eq('id', btn.dataset.delete);
-        if (error) { toast('Delete failed', true); return; }
-        toast('Deleted');
-        await loadAllData();
-      });
-    });
+  const textEl = $('draw-text');
+  if (textEl) {
+    const min = state.drawMode === 'building' ? 3 : 2;
+    if (state.drawMode === 'place') textEl.textContent = 'Tap map to place';
+    else if (count === 0) textEl.textContent = 'Tap map to add points';
+    else if (count < min) textEl.textContent = `Add ${min - count} more point${min - count > 1 ? 's' : ''}`;
+    else textEl.textContent = 'Tap Finish when done';
   }
+}
 
-  function flyToItem(id, type) {
-    if (type === 'path') {
-      const item = state.paths.find(p => p.id === id);
-      if (item?.geojson?.coordinates?.length) {
-        const coords = item.geojson.coordinates;
-        const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
-        state.map.fitBounds(bounds, { padding: 80, pitch: 50, duration: 900 });
-      }
-    } else {
-      const item = state.places.find(p => p.id === id);
-      if (item) state.map.flyTo({ center: [item.lng, item.lat], zoom: 18, pitch: 55, duration: 900 });
-    }
-    if (!isDesktop()) closeSheet();
+function undoLastPoint() {
+  if (!state.pendingVertices.length) return;
+  state.pendingVertices.pop();
+  const m = state.pendingMarkers.pop();
+  if (m) m.remove();
+  updateTempLine();
+  updateDrawUI();
+}
+
+function finishDrawing() {
+  const min = state.drawMode === 'building' ? 3 : 2;
+  if (state.pendingVertices.length < min) {
+    toast(`Need at least ${min} points`, true);
+    return;
   }
+  const vertices = state.pendingVertices.slice();
 
-  // ============================================================
-  // SEARCH
-  // ============================================================
-  $('search-input').addEventListener('input', e => {
-    state.searchQuery = e.target.value.trim();
-    if (state.activeView !== 'list') {
-      setActiveTab('list');
-    }
+  if (state.drawMode === 'path') {
+    openPathForm(vertices);
+  } else if (state.drawMode === 'building') {
+    openBuildingForm(vertices);
+  }
+}
+
+// ============================================================
+// DRAW MODE CONTROL
+// ============================================================
+function startDrawMode(mode) {
+  state.drawMode = mode;
+  clearPending();
+
+  const toolbar = $('draw-toolbar');
+  const finishBtn = $('draw-finish');
+  const countEl = $('draw-count');
+
+  if (mode === 'place') {
+    finishBtn.classList.add('hidden');
+    countEl.classList.add('hidden');
+  } else {
+    finishBtn.classList.remove('hidden');
+    countEl.classList.remove('hidden');
+  }
+  toolbar.classList.remove('hidden');
+  updateDrawUI();
+
+  if (!isDesktop()) closeSheet();
+  setActiveTab('map');
+}
+
+function cancelDrawMode() {
+  state.drawMode = null;
+  clearPending();
+  $('draw-toolbar').classList.add('hidden');
+}
+
+// Draw toolbar button handlers
+$('draw-undo').addEventListener('click', undoLastPoint);
+$('draw-finish').addEventListener('click', finishDrawing);
+$('draw-cancel').addEventListener('click', cancelDrawMode);
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadAllData() {
+  try {
+    const [places, paths] = await Promise.all([
+      sb.from('places').select('*').order('created_at', { ascending: false }),
+      sb.from('paths').select('*').order('created_at', { ascending: false }),
+    ]);
+    if (places.error) throw places.error;
+    if (paths.error) throw paths.error;
+    state.places = places.data || [];
+    state.paths = paths.data || [];
+    state.loading = false;
+    renderPaths(); renderFootprints(); renderMarkers(); renderCurrentView();
+  } catch(err) {
+    console.error(err);
+    state.loading = false;
+    toast('Load failed: ' + err.message, true);
     renderCurrentView();
-    if (!isDesktop()) openSheet();
+  }
+}
+
+let placeMarkers = [];
+function renderMarkers() {
+  placeMarkers.forEach(m => m.remove());
+  placeMarkers = [];
+  state.places.forEach(p => {
+    const cat = catInfo(p.category);
+    const el = document.createElement('div');
+    el.style.cssText = `width:32px;height:32px;border-radius:50%;background:${cat.color};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.5);cursor:pointer;`;
+    el.innerHTML = `<i class="fa-solid ${cat.icon}"></i>`;
+    const m = new maplibregl.Marker({ element: el })
+      .setLngLat([p.lng, p.lat])
+      .setPopup(new maplibregl.Popup({ offset: 22, closeButton: false }).setHTML(
+        `<div style="font-family:inherit;min-width:160px;">
+          <div style="color:${cat.color};font-weight:800;font-size:14px;">${esc(p.name)}</div>
+          <div style="color:#94a3b8;font-size:12px;margin-top:3px;">${cat.label}${p.short_code ? ' · ' + esc(p.short_code) : ''}</div>
+        </div>`
+      ))
+      .addTo(state.map);
+    placeMarkers.push(m);
   });
+}
 
-  // ============================================================
-  // ADD MENU
-  // ============================================================
-  function openAddMenu() {
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">➕ Add new data</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="quick-actions">
-          <button class="quick-action" data-action="place">
-            <div class="icon-wrap" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="fa-solid fa-location-dot"></i></div>
-            <div class="label">Place</div>
-            <div class="sub">Tap on map</div>
-          </button>
-          <button class="quick-action" data-action="building">
-            <div class="icon-wrap" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-building"></i></div>
-            <div class="label">Building</div>
-            <div class="sub">Draw outline</div>
-          </button>
-          <button class="quick-action" data-action="path">
-            <div class="icon-wrap" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fa-solid fa-route"></i></div>
-            <div class="label">Path</div>
-            <div class="sub">Draw line</div>
-          </button>
-          <button class="quick-action" data-action="track">
-            <div class="icon-wrap" style="background:rgba(168,85,247,0.15);color:#a855f7;"><i class="fa-solid fa-person-walking"></i></div>
-            <div class="label">GPS Track</div>
-            <div class="sub">Walk &amp; record</div>
-          </button>
-        </div>
-      </div>
-    `);
+function renderPaths() {
+  if (!state.map.getSource('paths-src')) return;
+  const features = state.paths.filter(p => p.geojson).map(p => ({
+    type: 'Feature', properties: { id: p.id, name: p.name }, geometry: p.geojson,
+  }));
+  state.map.getSource('paths-src').setData({ type: 'FeatureCollection', features });
+}
 
-    document.querySelectorAll('.quick-action').forEach(b => {
-      b.addEventListener('click', () => {
-        const action = b.dataset.action;
-        closeModal();
-        if (action === 'track') {
-          setActiveTab('track');
-          renderCurrentView();
-          openSheet();
-        } else {
-          startDrawMode(action);
-        }
-      });
-    });
-  }
-  window.openAddMenu = openAddMenu;
+function renderFootprints() {
+  if (!state.map.getSource('footprints-src')) return;
+  const features = state.places.filter(p => p.footprint_geojson).map(p => ({
+    type: 'Feature',
+    properties: { height: Number(p.height_m) || 12 },
+    geometry: p.footprint_geojson,
+  }));
+  state.map.getSource('footprints-src').setData({ type: 'FeatureCollection', features });
+}
 
-  function startDrawMode(mode) {
-    state.drawMode = mode;
-    clearPending();
-    const hint = mode === 'place' ? 'Tap map to add place'
-              : mode === 'building' ? 'Tap points around building · double-tap to finish'
-              : 'Tap points along path · double-tap to finish';
-    $('mode-text').textContent = hint;
-    $('mode-indicator').classList.remove('hidden');
-    if (!isDesktop()) closeSheet();
-    setActiveTab('map');
-  }
+// ============================================================
+// SHEET CONTROL
+// ============================================================
+function openSheet() { $('sheet').classList.add('open'); }
+function closeSheet() { if (!isDesktop()) $('sheet').classList.remove('open'); }
+function setActiveTab(view) {
+  document.querySelectorAll('.sheet-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.nav === view));
+  state.activeView = view;
+}
 
-  function cancelDrawMode() {
-    state.drawMode = null;
-    clearPending();
-    $('mode-indicator').classList.add('hidden');
-  }
+document.querySelectorAll('.sheet-tab').forEach(tab => {
+  tab.addEventListener('click', () => { setActiveTab(tab.dataset.view); renderCurrentView(); });
+});
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.nav;
+    if (view === 'map') { closeSheet(); setActiveTab('map'); return; }
+    if (view === 'add') { openAddMenu(); return; }
+    setActiveTab(view); renderCurrentView(); openSheet();
+  });
+});
 
-  $('mode-cancel').addEventListener('click', cancelDrawMode);
-
-  // ============================================================
-  // FORM: PLACE
-  // ============================================================
-  function openPlaceForm(lat, lng) {
-    cancelDrawMode();
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">📍 New Place</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">${placeFormFields({ lat, lng })}</div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
-        <button class="btn-primary" id="modal-save">Save Place</button>
-      </div>
-    `, async () => {
-      const data = collectPlaceData();
-      if (!data) return;
-      data.lat = lat;
-      data.lng = lng;
-      data.footprint_geojson = null;
-      const { error } = await sb.from('places').insert(data);
-      if (error) throw error;
-      closeModal();
-      toast('Place added ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // FORM: BUILDING
-  // ============================================================
-  function openBuildingForm(vertices) {
-    cancelDrawMode();
-    const ring = vertices.concat([vertices[0]]);
-    const footprint = { type: 'Polygon', coordinates: [ring] };
-    const centerLng = vertices.reduce((s, v) => s + v[0], 0) / vertices.length;
-    const centerLat = vertices.reduce((s, v) => s + v[1], 0) / vertices.length;
-
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">🏢 New Building</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">${placeFormFields({ lat: centerLat, lng: centerLng, isBuilding: true })}</div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
-        <button class="btn-primary" id="modal-save">Save Building</button>
-      </div>
-    `, async () => {
-      const data = collectPlaceData();
-      if (!data) return;
-      data.lat = centerLat;
-      data.lng = centerLng;
-      data.footprint_geojson = footprint;
-      const { error } = await sb.from('places').insert(data);
-      if (error) throw error;
-      closeModal();
-      toast('Building added ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // FORM: PATH
-  // ============================================================
-  function openPathForm(vertices) {
-    cancelDrawMode();
-    const dist = turf.length(turf.lineString(vertices), { units: 'meters' });
-
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">🛤 New Walkway</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-field">
-          <label>Name (optional)</label>
-          <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Type</label>
-            <select id="f-path-type">
-              ${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-field">
-            <label>Surface</label>
-            <select id="f-surface">
-              <option value="">Unknown</option>
-              ${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Width (m)</label>
-            <input type="number" id="f-width" value="2" min="0.5" step="0.5">
-          </div>
-          <div class="form-field">
-            <label>Length</label>
-            <input type="text" value="${fmtDist(dist)}" disabled style="opacity:0.6;">
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Notes</label>
-          <textarea id="f-notes" placeholder="Landmarks, surface condition…"></textarea>
-        </div>
-        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-top:6px;">
-          <div class="toggle-row"><span style="font-size:14px;">💡 Lit at night</span><div class="toggle on" id="f-lit"></div></div>
-          <div class="toggle-row"><span style="font-size:14px;">♿ Wheelchair accessible</span><div class="toggle on" id="f-accessible"></div></div>
-          <div class="toggle-row"><span style="font-size:14px;">🪜 Has steps</span><div class="toggle" id="f-steps"></div></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
-        <button class="btn-primary" id="modal-save">Save Walkway</button>
-      </div>
-    `, async () => {
-      const data = {
-        name: $('f-name').value.trim() || null,
-        path_type: $('f-path-type').value,
-        surface: $('f-surface').value || null,
-        width_m: Number($('f-width').value) || null,
-        is_lit: $('f-lit').classList.contains('on'),
-        is_accessible: $('f-accessible').classList.contains('on'),
-        has_steps: $('f-steps').classList.contains('on'),
-        geojson: { type: 'LineString', coordinates: vertices },
-        notes: $('f-notes').value.trim() || null,
-        created_by: state.user.id,
-        created_by_email: state.user.email,
-      };
-      const { error } = await sb.from('paths').insert(data);
-      if (error) throw error;
-      closeModal();
-      toast('Walkway added ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // FORM: EDIT
-  // ============================================================
-  function openEditForm(item) {
-    const catOpts = CFG.categories.map(c =>
-      `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`
-    ).join('');
-    const amenityChips = CFG.amenities.map(a =>
-      `<button type="button" class="chip-toggle ${(item.amenities || []).includes(a.id) ? 'selected' : ''}" data-amenity="${a.id}">${a.label}</button>`
-    ).join('');
-
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">✏️ Edit ${item.footprint_geojson ? 'Building' : 'Place'}</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-field">
-          <label>Name <span class="req">*</span></label>
-          <input type="text" id="f-name" value="${esc(item.name)}">
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Short code</label>
-            <input type="text" id="f-code" value="${esc(item.short_code || '')}" placeholder="27">
-          </div>
-          <div class="form-field">
-            <label>Category</label>
-            <select id="f-category">${catOpts}</select>
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Full name</label>
-          <input type="text" id="f-fullname" value="${esc(item.full_name || '')}" placeholder="Block 27 — CSE Department">
-        </div>
-        ${item.footprint_geojson ? `
-          <div class="form-row">
-            <div class="form-field">
-              <label>Height (m)</label>
-              <input type="number" id="f-height" value="${item.height_m || 12}" min="1" max="200">
-            </div>
-            <div class="form-field">
-              <label>Floors</label>
-              <input type="number" id="f-floors" value="${item.floors || ''}" min="1" max="50">
-            </div>
-          </div>` : ''}
-        <div class="form-field">
-          <label>Amenities</label>
-          <div class="chip-group" id="amenity-group">${amenityChips}</div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Opening hours</label>
-            <input type="text" id="f-hours" value="${esc(item.opening_hours || '')}" placeholder="8AM–8PM">
-          </div>
-          <div class="form-field">
-            <label>Contact phone</label>
-            <input type="tel" id="f-phone" value="${esc(item.contact_phone || '')}">
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Description</label>
-          <textarea id="f-desc">${esc(item.description || item.notes || '')}</textarea>
-        </div>
-        <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
-          <div class="toggle-row">
-            <span style="font-size:14px;">♿ Wheelchair accessible</span>
-            <div class="toggle ${item.is_accessible ? 'on' : ''}" id="f-accessible"></div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
-        <button class="btn-primary" id="modal-save">Save Changes</button>
-      </div>
-    `, async () => {
-      const name = $('f-name').value.trim();
-      if (!name) { toast('Name required', true); return; }
-      const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
-
-      const update = {
-        name,
-        short_code: $('f-code').value.trim() || null,
-        full_name: $('f-fullname').value.trim() || null,
-        category: $('f-category').value,
-        amenities,
-        opening_hours: $('f-hours').value.trim() || null,
-        contact_phone: $('f-phone').value.trim() || null,
-        description: $('f-desc').value.trim() || null,
-        is_accessible: $('f-accessible').classList.contains('on'),
-        updated_at: new Date().toISOString(),
-      };
-      if ($('f-height')) update.height_m = Number($('f-height').value) || 12;
-      if ($('f-floors')) update.floors = Number($('f-floors').value) || null;
-
-      const { error } = await sb.from('places').update(update).eq('id', item.id);
-      if (error) throw error;
-      closeModal();
-      toast('Updated ✓');
-      await loadAllData();
-    });
-  }
-
-  // ============================================================
-  // TRACK VIEW
-  // ============================================================
-  function renderTrackView() {
+// ============================================================
+// RENDER CURRENT VIEW
+// ============================================================
+function renderCurrentView() {
+  if (state.loading) {
     $('sheet-body').innerHTML = `
-      <div class="track-hero">
-        <div class="distance" id="track-dist">${fmtDist(state.totalDistance)}</div>
-        <div class="distance-label">Distance walked</div>
+      <div class="section-header"><span>Loading…</span></div>
+      <div class="items-grid"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>`;
+    return;
+  }
+  if (state.activeView === 'track') renderTrackView();
+  else if (state.activeView === 'stats') renderStatsView();
+  else renderListView();
+}
+
+// ============================================================
+// LIST VIEW
+// ============================================================
+function renderListView() {
+  const q = state.searchQuery.toLowerCase();
+  const filteredPlaces = state.places.filter(p => {
+    if (state.activeCategory !== 'all' && p.category !== state.activeCategory) return false;
+    if (!q) return true;
+    return (p.name + ' ' + (p.short_code || '') + ' ' + (p.full_name || '') + ' ' + (p.description || '')).toLowerCase().includes(q);
+  });
+  const filteredPaths = q ? [] : state.paths;
+
+  const counts = { all: state.places.length };
+  CFG.categories.forEach(c => counts[c.id] = 0);
+  state.places.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
+
+  const chips = [
+    `<button class="chip ${state.activeCategory === 'all' ? 'active' : ''}" data-cat="all">All <span class="badge">${counts.all}</span></button>`,
+    ...CFG.categories.filter(c => counts[c.id] > 0 || state.activeCategory === c.id).map(c =>
+      `<button class="chip ${state.activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">${c.label} <span class="badge">${counts[c.id]}</span></button>`)
+  ].join('');
+
+  const itemsHTML = [
+    ...filteredPlaces.map(p => renderItemCard(p, 'place')),
+    ...filteredPaths.map(p => renderItemCard(p, 'path')),
+  ].join('');
+
+  const total = filteredPlaces.length + filteredPaths.length;
+
+  $('sheet-body').innerHTML = `
+    <div class="filter-chips">${chips}</div>
+    <div class="section-header">
+      <span>${q ? 'Search results' : 'All items'}</span>
+      <span class="count">${total}</span>
+    </div>
+    ${total === 0
+      ? `<div class="empty-state">
+          <div class="emoji">📭</div>
+          <h3>${q ? 'No matches' : 'No items yet'}</h3>
+          <p>${q ? 'Try a different search term' : 'Start collecting data for LPU campus'}</p>
+          ${!q ? `<button class="cta" onclick="window.openAddMenu()"><i class="fa-solid fa-plus"></i> Add first item</button>` : ''}
+        </div>`
+      : `<div class="items-grid">${itemsHTML}</div>`}
+  `;
+
+  document.querySelectorAll('.filter-chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => { state.activeCategory = chip.dataset.cat; renderListView(); });
+  });
+  bindItemActions();
+}
+
+function renderItemCard(item, type) {
+  const isPath = type === 'path';
+  const cat = isPath ? { color: '#10b981', icon: 'fa-route', label: 'Walkway' } : catInfo(item.category);
+  const title = isPath ? (item.name || 'Unnamed path') : item.name;
+  const code = !isPath && item.short_code ? `<span class="item-code">${esc(item.short_code)}</span>` : '';
+  const isBuilding = !isPath && !!item.footprint_geojson;
+
+  let sub = '';
+  if (isPath) {
+    const coords = item.geojson?.coordinates || [];
+    const dist = coords.length > 1 ? turf.length(turf.lineString(coords), { units: 'meters' }) : 0;
+    sub = `${item.path_type || 'footpath'} · ${fmtDist(dist)} · ${item.created_by_email || ''}`;
+  } else {
+    sub = `${cat.label}${isBuilding ? ' · Building' : ''} · ${item.created_by_email || ''}`;
+  }
+
+  const photo = item.photos && item.photos[0]
+    ? `<img src="${esc(item.photos[0])}" alt="">`
+    : `<i class="fa-solid ${cat.icon}" style="color:${cat.color};"></i>`;
+
+  const canDelete = item.created_by === state.user.id;
+  const editBtn = isPath ? '' : `<button class="icon-btn" data-edit="${item.id}"><i class="fa-solid fa-pen"></i></button>`;
+  const delBtn = canDelete ? `<button class="icon-btn danger" data-delete="${item.id}" data-type="${type}"><i class="fa-solid fa-trash"></i></button>` : '';
+
+  return `
+    <div class="item-card" data-id="${item.id}" data-type="${type}">
+      <div class="item-thumb" style="background:${cat.color}20;">${photo}</div>
+      <div class="item-main">
+        <div class="item-title">${code}${esc(title)}</div>
+        <div class="item-sub">${esc(sub)}</div>
       </div>
-      <div class="accuracy-pill">
-        <div class="accuracy-dot bad" id="track-acc-dot"></div>
-        <span>GPS accuracy: <b id="track-acc-text">${state.watchId ? 'Waiting…' : 'Not started'}</b></span>
-      </div>
-      <div class="track-metrics">
-        <div class="metric-card"><div class="value" id="track-time">0:00</div><div class="label">Time</div></div>
-        <div class="metric-card"><div class="value" id="track-points">${state.trackPoints.length}</div><div class="label">Points</div></div>
-        <div class="metric-card"><div class="value" id="track-speed">0.0</div><div class="label">km/h</div></div>
-      </div>
-      <button class="btn-record ${state.isRecording ? 'recording' : ''}" id="btn-record" ${state.isRecording ? 'disabled' : ''}>
-        <i class="fa-solid fa-${state.isRecording ? 'circle-stop' : 'circle'}"></i>
-        ${state.isRecording ? 'Recording…' : 'Start Recording'}
-      </button>
-      <div class="track-controls">
-        <button class="btn-secondary" id="btn-pause" ${!state.isRecording ? 'disabled' : ''}>
-          <i class="fa-solid fa-${state.isPaused ? 'play' : 'pause'}"></i>
-          ${state.isPaused ? 'Resume' : 'Pause'}
+      <div class="item-actions">${editBtn}${delBtn}</div>
+    </div>
+  `;
+}
+
+function bindItemActions() {
+  document.querySelectorAll('.item-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('.icon-btn')) return;
+      flyToItem(card.dataset.id, card.dataset.type);
+    });
+  });
+  document.querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const item = state.places.find(p => p.id === btn.dataset.edit);
+      if (item) openEditForm(item);
+    });
+  });
+  document.querySelectorAll('[data-delete]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm('Delete this item?')) return;
+      const table = btn.dataset.type === 'path' ? 'paths' : 'places';
+      const { error } = await sb.from(table).delete().eq('id', btn.dataset.delete);
+      if (error) { toast('Delete failed', true); return; }
+      toast('Deleted');
+      await loadAllData();
+    });
+  });
+}
+
+function flyToItem(id, type) {
+  if (type === 'path') {
+    const item = state.paths.find(p => p.id === id);
+    if (item?.geojson?.coordinates?.length) {
+      const coords = item.geojson.coordinates;
+      const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]));
+      state.map.fitBounds(bounds, { padding: 80, pitch: 50, duration: 900 });
+    }
+  } else {
+    const item = state.places.find(p => p.id === id);
+    if (item) state.map.flyTo({ center: [item.lng, item.lat], zoom: 18, pitch: 55, duration: 900 });
+  }
+  if (!isDesktop()) closeSheet();
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+$('search-input').addEventListener('input', e => {
+  state.searchQuery = e.target.value.trim();
+  if (state.activeView !== 'list') setActiveTab('list');
+  renderCurrentView();
+  if (!isDesktop()) openSheet();
+});
+
+// ============================================================
+// ADD MENU
+// ============================================================
+function openAddMenu() {
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">➕ Add new data</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="quick-actions">
+        <button class="quick-action" data-action="place">
+          <div class="icon-wrap" style="background:rgba(59,130,246,0.15);color:#3b82f6;"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="label">Place</div><div class="sub">Tap on map</div>
         </button>
-        <button class="btn-secondary" id="btn-stop" ${!state.isRecording ? 'disabled' : ''}>
-          <i class="fa-solid fa-stop"></i> Stop &amp; Save
+        <button class="quick-action" data-action="building">
+          <div class="icon-wrap" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-building"></i></div>
+          <div class="label">Building</div><div class="sub">Draw outline</div>
+        </button>
+        <button class="quick-action" data-action="path">
+          <div class="icon-wrap" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="fa-solid fa-route"></i></div>
+          <div class="label">Path</div><div class="sub">Draw line</div>
+        </button>
+        <button class="quick-action" data-action="track">
+          <div class="icon-wrap" style="background:rgba(168,85,247,0.15);color:#a855f7;"><i class="fa-solid fa-person-walking"></i></div>
+          <div class="label">GPS Track</div><div class="sub">Walk &amp; record</div>
         </button>
       </div>
-      ${state.trackPoints.length > 0 && !state.isRecording ? `
-        <button class="btn-danger-outline" id="btn-discard">
-          <i class="fa-solid fa-trash"></i> Discard Track
-        </button>` : ''}
-      <div style="margin-top:20px;padding:14px;background:var(--surface-2);border-radius:10px;font-size:12px;color:var(--text-muted);line-height:1.6;">
-        <b style="color:var(--text);">📌 How it works:</b> Walk along the path with your phone. Points are auto-filtered (accuracy &lt;30m, ≥2m apart). Blue line shows your track live.
-      </div>
-    `;
-    bindTrackControls();
-  }
-
-  function bindTrackControls() {
-    const rec = $('btn-record'); if (rec && !state.isRecording) rec.onclick = startRecording;
-    const pause = $('btn-pause'); if (pause) pause.onclick = state.isPaused ? resumeRecording : pauseRecording;
-    const stop = $('btn-stop'); if (stop) stop.onclick = stopRecording;
-    const disc = $('btn-discard'); if (disc) disc.onclick = () => { if (confirm('Discard this track?')) { clearTrack(); renderTrackView(); } };
-  }
-
-  function startRecording() {
-    if (!navigator.geolocation) { toast('GPS not available', true); return; }
-    state.isRecording = true;
-    state.isPaused = false;
-    state.trackPoints = [];
-    state.totalDistance = 0;
-    state.trackStartTime = Date.now();
-    state.trackPausedAt = null;
-    state.totalPausedMs = 0;
-    state.lastAcceptedPoint = null;
-
-    state.watchId = navigator.geolocation.watchPosition(
-      onPositionUpdate, onPositionError,
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
-    );
-
-    renderTrackView();
-    toast('Recording started');
-    if (!isDesktop()) closeSheet();
-  }
-
-  function onPositionUpdate(pos) {
-    const { latitude, longitude, accuracy, speed } = pos.coords;
-    const dot = $('track-acc-dot');
-    const txt = $('track-acc-text');
-    if (txt) txt.textContent = accuracy ? Math.round(accuracy) + ' m' : '—';
-    if (dot) dot.className = 'accuracy-dot ' + (accuracy <= 10 ? 'good' : accuracy <= 25 ? 'ok' : 'bad');
-
-    updateCurrentPos(longitude, latitude, accuracy);
-
-    if (!state.isRecording || state.isPaused) return;
-    if (accuracy && accuracy > 30) return;
-
-    if (state.lastAcceptedPoint) {
-      const d = turf.distance(
-        turf.point([state.lastAcceptedPoint.lng, state.lastAcceptedPoint.lat]),
-        turf.point([longitude, latitude]),
-        { units: 'meters' }
-      );
-      if (d < 2) return;
-      state.totalDistance += d;
-    }
-
-    const p = { lng: longitude, lat: latitude, accuracy, timestamp: pos.timestamp };
-    state.trackPoints.push(p);
-    state.lastAcceptedPoint = p;
-    updateTrackLine();
-    updateTrackStats(speed);
-  }
-
-  function onPositionError(err) { console.warn(err); toast('GPS: ' + (err.message || 'error'), true); }
-
-  function updateCurrentPos(lng, lat, accuracy) {
-    if (!state.currentPosMarker) {
-      const el = document.createElement('div');
-      el.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 12px rgba(59,130,246,0.8);';
-      state.currentPosMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
-    } else {
-      state.currentPosMarker.setLngLat([lng, lat]);
-    }
-    if (state.map.getSource('accuracy-src') && accuracy) {
-      const circle = turf.circle([lng, lat], accuracy / 1000, { steps: 32, units: 'kilometers' });
-      state.map.getSource('accuracy-src').setData(circle);
-    }
-  }
-
-  function updateTrackLine() {
-    if (!state.map.getSource('track-src')) return;
-    state.map.getSource('track-src').setData({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: state.trackPoints.map(p => [p.lng, p.lat]) },
-    });
-  }
-
-  function updateTrackStats(speed) {
-    const d = $('track-dist'); if (d) d.textContent = fmtDist(state.totalDistance);
-    const p = $('track-points'); if (p) p.textContent = state.trackPoints.length;
-    const s = $('track-speed'); if (s) s.textContent = speed ? (speed * 3.6).toFixed(1) : '0.0';
-    const t = $('track-time');
-    if (t && state.trackStartTime) {
-      let elapsed = Date.now() - state.trackStartTime - state.totalPausedMs;
-      if (state.isPaused && state.trackPausedAt) elapsed -= (Date.now() - state.trackPausedAt);
-      const m = Math.floor(elapsed / 60000);
-      const sec = Math.floor((elapsed % 60000) / 1000);
-      t.textContent = `${m}:${sec.toString().padStart(2, '0')}`;
-    }
-  }
-
-  function pauseRecording() {
-    if (!state.isRecording || state.isPaused) return;
-    state.isPaused = true; state.trackPausedAt = Date.now();
-    renderTrackView();
-  }
-  function resumeRecording() {
-    if (!state.isRecording || !state.isPaused) return;
-    state.isPaused = false;
-    if (state.trackPausedAt) {
-      state.totalPausedMs += Date.now() - state.trackPausedAt;
-      state.trackPausedAt = null;
-    }
-    renderTrackView();
-  }
-
-  function stopWatching() {
-    if (state.watchId !== null) {
-      navigator.geolocation.clearWatch(state.watchId);
-      state.watchId = null;
-    }
-  }
-
-  function stopRecording() {
-    stopWatching();
-    state.isRecording = false;
-    state.isPaused = false;
-    if (state.trackPoints.length < 2) {
-      toast('Track too short', true);
-      clearTrack();
-      renderTrackView();
-      return;
-    }
-    openTrackSaveForm();
-  }
-
-  function clearTrack() {
-    state.trackPoints = [];
-    state.totalDistance = 0;
-    state.trackStartTime = null;
-    state.trackPausedAt = null;
-    state.totalPausedMs = 0;
-    state.lastAcceptedPoint = null;
-    if (state.map.getSource('track-src')) {
-      state.map.getSource('track-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
-    }
-    if (state.map.getSource('accuracy-src')) {
-      state.map.getSource('accuracy-src').setData({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } });
-    }
-    if (state.currentPosMarker) { state.currentPosMarker.remove(); state.currentPosMarker = null; }
-  }
-
-  function openTrackSaveForm() {
-    const coords = state.trackPoints.map(p => [p.lng, p.lat]);
-    const simplified = turf.simplify(turf.lineString(coords), { tolerance: 0.00003, highQuality: true });
-    const finalCoords = simplified.geometry.coordinates;
-    const dist = turf.length(simplified, { units: 'meters' });
-    const durationMin = Math.round((Date.now() - state.trackStartTime - state.totalPausedMs) / 60000);
-
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">💾 Save Track</div>
-        <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:16px;font-size:13px;line-height:1.7;">
-          📏 <b>${fmtDist(dist)}</b> &nbsp;·&nbsp; ⏱ <b>${durationMin} min</b> &nbsp;·&nbsp; 📍 <b>${finalCoords.length} points</b>
-        </div>
-        <div class="form-field">
-          <label>Name <span class="req">*</span></label>
-          <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Type</label>
-            <select id="f-path-type">
-              ${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-field">
-            <label>Surface</label>
-            <select id="f-surface">
-              <option value="">Unknown</option>
-              ${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}
-            </select>
-          </div>
-        </div>
-        <div class="form-field">
-          <label>Notes</label>
-          <textarea id="f-notes" placeholder="Landmarks, etc…"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
-        <button class="btn-primary" id="modal-save">Save</button>
-      </div>
-    `, async () => {
-      const name = $('f-name').value.trim();
-      if (!name) { toast('Name required', true); return; }
-      const { error } = await sb.from('paths').insert({
-        name,
-        path_type: $('f-path-type').value,
-        surface: $('f-surface').value || null,
-        geojson: { type: 'LineString', coordinates: finalCoords },
-        notes: $('f-notes').value.trim() || null,
-        created_by: state.user.id,
-        created_by_email: state.user.email,
-      });
-      if (error) throw error;
+    </div>
+  `);
+  document.querySelectorAll('.quick-action').forEach(b => {
+    b.addEventListener('click', () => {
+      const action = b.dataset.action;
       closeModal();
-      clearTrack();
-      toast('Track saved ✓');
-      await loadAllData();
-      renderTrackView();
+      if (action === 'track') { setActiveTab('track'); renderCurrentView(); openSheet(); }
+      else startDrawMode(action);
     });
-  }
+  });
+}
+window.openAddMenu = openAddMenu;
 
-  // ============================================================
-  // STATS VIEW
-  // ============================================================
-  function renderStatsView() {
-    const total = state.places.length + state.paths.length;
-    const buildings = state.places.filter(p => p.footprint_geojson).length;
-    const places = state.places.length - buildings;
-    const paths = state.paths.length;
+// ============================================================
+// FORMS
+// ============================================================
+function openPlaceForm(lat, lng) {
+  cancelDrawMode();
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">📍 New Place</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">${placeFormFields({ lat, lng })}</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save Place</button>
+    </div>
+  `, async () => {
+    const data = collectPlaceData();
+    if (!data) return;
+    data.lat = lat; data.lng = lng; data.footprint_geojson = null;
+    const { error } = await sb.from('places').insert(data);
+    if (error) throw error;
+    closeModal(); toast('Place added ✓');
+    await loadAllData();
+  });
+}
 
-    const complete = state.places.filter(p => p.short_code && p.description && ((p.amenities && p.amenities.length) || (p.photos && p.photos.length))).length;
-    const pct = state.places.length ? Math.round((complete / state.places.length) * 100) : 0;
+function openBuildingForm(vertices) {
+  cancelDrawMode();
+  const ring = vertices.concat([vertices[0]]);
+  const footprint = { type: 'Polygon', coordinates: [ring] };
+  const centerLng = vertices.reduce((s,v) => s+v[0], 0) / vertices.length;
+  const centerLat = vertices.reduce((s,v) => s+v[1], 0) / vertices.length;
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">🏢 New Building</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">${placeFormFields({ lat: centerLat, lng: centerLng, isBuilding: true })}</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save Building</button>
+    </div>
+  `, async () => {
+    const data = collectPlaceData();
+    if (!data) return;
+    data.lat = centerLat; data.lng = centerLng; data.footprint_geojson = footprint;
+    const { error } = await sb.from('places').insert(data);
+    if (error) throw error;
+    closeModal(); toast('Building added ✓');
+    await loadAllData();
+  });
+}
 
-    const catCounts = {};
-    CFG.categories.forEach(c => catCounts[c.id] = 0);
-    state.places.forEach(p => { if (catCounts[p.category] !== undefined) catCounts[p.category]++; });
-    const maxCat = Math.max(...Object.values(catCounts), 1);
-
-    const contributors = {};
-    [...state.places, ...state.paths].forEach(x => {
-      const e = x.created_by_email || 'unknown';
-      contributors[e] = (contributors[e] || 0) + 1;
-    });
-
-    $('sheet-body').innerHTML = `
-      <div class="section-header"><span>Overview</span></div>
-      <div class="stats-hero">
-        <div class="stat-block">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div><div class="value">${total}</div><div class="label">Total items</div></div>
-            <div class="progress-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
-          </div>
-        </div>
-        <div class="stat-block"><div class="value">${buildings}</div><div class="label">Buildings</div></div>
-        <div class="stat-block"><div class="value">${places}</div><div class="label">Places / POIs</div></div>
-        <div class="stat-block"><div class="value">${paths}</div><div class="label">Walkways</div></div>
-      </div>
-
-      <div class="section-header"><span>By category</span></div>
-      <div class="category-bars">
-        ${CFG.categories.filter(c => catCounts[c.id] > 0).map(c => `
-          <div class="cat-row">
-            <div class="label"><i class="fa-solid ${c.icon}" style="color:${c.color};width:14px;"></i> ${c.label}</div>
-            <div class="bar-track"><div class="bar-fill" style="width:${(catCounts[c.id] / maxCat) * 100}%;background:${c.color};"></div></div>
-            <div class="count">${catCounts[c.id]}</div>
-          </div>
-        `).join('') || '<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:20px;">No data yet</div>'}
-      </div>
-
-      <div class="section-header"><span>Contributors</span></div>
-      <div class="items-grid">
-        ${Object.entries(contributors).map(([email, count]) => `
-          <div class="item-card" style="cursor:default;">
-            <div class="item-thumb" style="background:var(--surface-3);color:var(--text);font-weight:800;font-size:14px;">${email.charAt(0).toUpperCase()}</div>
-            <div class="item-main">
-              <div class="item-title">${esc(email)}</div>
-              <div class="item-sub">${count} item${count > 1 ? 's' : ''}</div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="section-header"><span>Export</span></div>
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
-        <button class="btn-secondary" id="btn-export-json" style="flex:1;"><i class="fa-solid fa-code"></i> JSON</button>
-        <button class="btn-secondary" id="btn-export-geojson" style="flex:1;"><i class="fa-solid fa-map"></i> GeoJSON</button>
-      </div>
-    `;
-
-    $('btn-export-json').onclick = exportJSON;
-    $('btn-export-geojson').onclick = exportGeoJSON;
-  }
-
-  function downloadFile(name, data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
-    toast('Downloaded ' + name);
-  }
-
-  function exportJSON() {
-    downloadFile('lpu-data-' + new Date().toISOString().slice(0, 10) + '.json', {
-      places: state.places, paths: state.paths,
-    });
-  }
-
-  function exportGeoJSON() {
-    const features = [
-      ...state.places.map(p => ({
-        type: 'Feature',
-        properties: {
-          kind: 'place', id: p.id, name: p.name, short_code: p.short_code,
-          full_name: p.full_name, category: p.category,
-          floors: p.floors, amenities: p.amenities, hours: p.opening_hours,
-          phone: p.contact_phone, is_accessible: p.is_accessible, description: p.description,
-        },
-        geometry: p.footprint_geojson || { type: 'Point', coordinates: [p.lng, p.lat] },
-      })),
-      ...state.paths.map(p => ({
-        type: 'Feature',
-        properties: {
-          kind: 'path', id: p.id, name: p.name, path_type: p.path_type,
-          surface: p.surface, width_m: p.width_m, is_lit: p.is_lit,
-          is_accessible: p.is_accessible, has_steps: p.has_steps,
-        },
-        geometry: p.geojson,
-      })),
-    ];
-    downloadFile('lpu-campus-' + new Date().toISOString().slice(0, 10) + '.geojson', {
-      type: 'FeatureCollection', features,
-    });
-  }
-
-  // ============================================================
-  // MODAL SYSTEM
-  // ============================================================
-  function showModal(html, onSave) {
-    $('modal').innerHTML = html;
-    $('modal').classList.remove('hidden');
-    $('modal-backdrop').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    bindToggles();
-    bindAmenityChips();
-
-    if (onSave) {
-      const btn = $('modal-save');
-      if (btn) btn.onclick = async () => {
-        btn.disabled = true;
-        const orig = btn.textContent;
-        btn.textContent = 'Saving…';
-        try {
-          await onSave();
-        } catch (err) {
-          console.error(err);
-          toast('Error: ' + (err.message || err), true);
-          btn.disabled = false;
-          btn.textContent = orig;
-        }
-      };
-    }
-  }
-
-  function closeModal() {
-    $('modal').classList.add('hidden');
-    $('modal-backdrop').classList.add('hidden');
-    $('modal').innerHTML = '';
-    document.body.style.overflow = '';
-  }
-  window.closeModal = closeModal;
-
-  $('modal-backdrop').addEventListener('click', closeModal);
-
-  // ============================================================
-  // FORM HELPERS
-  // ============================================================
-  function placeFormFields({ lat, lng, isBuilding }) {
-    const catOpts = CFG.categories.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
-    const amenityChips = CFG.amenities.map(a =>
-      `<button type="button" class="chip-toggle" data-amenity="${a.id}">${a.label}</button>`
-    ).join('');
-
-    return `
-      <div class="form-field">
-        <label>Name <span class="req">*</span></label>
-        <input type="text" id="f-name" placeholder="${isBuilding ? 'Block 27' : 'Block 27 Main Entrance'}" autofocus>
+function openPathForm(vertices) {
+  cancelDrawMode();
+  const dist = turf.length(turf.lineString(vertices), { units: 'meters' });
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">🛤 New Walkway</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field"><label>Name (optional)</label>
+        <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus></div>
+      <div class="form-row">
+        <div class="form-field"><label>Type</label>
+          <select id="f-path-type">${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}</select></div>
+        <div class="form-field"><label>Surface</label>
+          <select id="f-surface"><option value="">Unknown</option>${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}</select></div>
       </div>
       <div class="form-row">
-        <div class="form-field">
-          <label>Short code</label>
-          <input type="text" id="f-code" placeholder="27">
-        </div>
-        <div class="form-field">
-          <label>Category</label>
-          <select id="f-category">${catOpts}</select>
-        </div>
+        <div class="form-field"><label>Width (m)</label>
+          <input type="number" id="f-width" value="2" min="0.5" step="0.5"></div>
+        <div class="form-field"><label>Length</label>
+          <input type="text" value="${fmtDist(dist)}" disabled style="opacity:0.6;"></div>
       </div>
-      <div class="form-field">
-        <label>Full name</label>
-        <input type="text" id="f-fullname" placeholder="Block 27 — CSE Department">
-      </div>
-      ${isBuilding ? `
-        <div class="form-row">
-          <div class="form-field">
-            <label>Height (m)</label>
-            <input type="number" id="f-height" value="12" min="1" max="200">
-          </div>
-          <div class="form-field">
-            <label>Floors</label>
-            <input type="number" id="f-floors" min="1" max="50" placeholder="3">
-          </div>
-        </div>` : ''}
-      <div class="form-field">
-        <label>Amenities</label>
-        <div class="chip-group" id="amenity-group">${amenityChips}</div>
-      </div>
-      <div class="form-row">
-        <div class="form-field">
-          <label>Opening hours</label>
-          <input type="text" id="f-hours" placeholder="8AM–8PM">
-        </div>
-        <div class="form-field">
-          <label>Contact phone</label>
-          <input type="tel" id="f-phone" placeholder="+91...">
-        </div>
-      </div>
-      <div class="form-field">
-        <label>Description</label>
-        <textarea id="f-desc" placeholder="Details…"></textarea>
-      </div>
+      <div class="form-field"><label>Notes</label>
+        <textarea id="f-notes" placeholder="Landmarks, surface condition…"></textarea></div>
       <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
-        <div class="toggle-row">
-          <span style="font-size:14px;">♿ Wheelchair accessible</span>
-          <div class="toggle on" id="f-accessible"></div>
-        </div>
+        <div class="toggle-row"><span style="font-size:14px;">💡 Lit at night</span><div class="toggle on" id="f-lit"></div></div>
+        <div class="toggle-row"><span style="font-size:14px;">♿ Wheelchair accessible</span><div class="toggle on" id="f-accessible"></div></div>
+        <div class="toggle-row"><span style="font-size:14px;">🪜 Has steps</span><div class="toggle" id="f-steps"></div></div>
       </div>
-      <div style="margin-top:14px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;color:var(--text-muted);text-align:center;">
-        📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}
-      </div>
-    `;
-  }
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save Walkway</button>
+    </div>
+  `, async () => {
+    const data = {
+      name: $('f-name').value.trim() || null,
+      path_type: $('f-path-type').value,
+      surface: $('f-surface').value || null,
+      width_m: Number($('f-width').value) || null,
+      is_lit: $('f-lit').classList.contains('on'),
+      is_accessible: $('f-accessible').classList.contains('on'),
+      has_steps: $('f-steps').classList.contains('on'),
+      geojson: { type: 'LineString', coordinates: vertices },
+      notes: $('f-notes').value.trim() || null,
+      created_by: state.user.id,
+      created_by_email: state.user.email,
+    };
+    const { error } = await sb.from('paths').insert(data);
+    if (error) throw error;
+    closeModal(); toast('Walkway added ✓');
+    await loadAllData();
+  });
+}
 
-  function collectPlaceData() {
+function openEditForm(item) {
+  const catOpts = CFG.categories.map(c =>
+    `<option value="${c.id}" ${c.id === item.category ? 'selected' : ''}>${c.label}</option>`).join('');
+  const amenityChips = CFG.amenities.map(a =>
+    `<button type="button" class="chip-toggle ${(item.amenities || []).includes(a.id) ? 'selected' : ''}" data-amenity="${a.id}">${a.label}</button>`).join('');
+
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">✏️ Edit ${item.footprint_geojson ? 'Building' : 'Place'}</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field"><label>Name <span class="req">*</span></label>
+        <input type="text" id="f-name" value="${esc(item.name)}"></div>
+      <div class="form-row">
+        <div class="form-field"><label>Short code</label>
+          <input type="text" id="f-code" value="${esc(item.short_code || '')}" placeholder="27"></div>
+        <div class="form-field"><label>Category</label>
+          <select id="f-category">${catOpts}</select></div>
+      </div>
+      <div class="form-field"><label>Full name</label>
+        <input type="text" id="f-fullname" value="${esc(item.full_name || '')}" placeholder="Block 27 — CSE Department"></div>
+      ${item.footprint_geojson ? `
+        <div class="form-row">
+          <div class="form-field"><label>Height (m)</label>
+            <input type="number" id="f-height" value="${item.height_m || 12}" min="1" max="200"></div>
+          <div class="form-field"><label>Floors</label>
+            <input type="number" id="f-floors" value="${item.floors || ''}" min="1" max="50"></div>
+        </div>` : ''}
+      <div class="form-field"><label>Amenities</label>
+        <div class="chip-group" id="amenity-group">${amenityChips}</div></div>
+      <div class="form-row">
+        <div class="form-field"><label>Opening hours</label>
+          <input type="text" id="f-hours" value="${esc(item.opening_hours || '')}" placeholder="8AM–8PM"></div>
+        <div class="form-field"><label>Contact phone</label>
+          <input type="tel" id="f-phone" value="${esc(item.contact_phone || '')}"></div>
+      </div>
+      <div class="form-field"><label>Description</label>
+        <textarea id="f-desc">${esc(item.description || item.notes || '')}</textarea></div>
+      <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
+        <div class="toggle-row"><span style="font-size:14px;">♿ Wheelchair accessible</span>
+          <div class="toggle ${item.is_accessible ? 'on' : ''}" id="f-accessible"></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save Changes</button>
+    </div>
+  `, async () => {
     const name = $('f-name').value.trim();
-    if (!name) { toast('Name required', true); return null; }
+    if (!name) { toast('Name required', true); return; }
     const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
-
-    return {
+    const update = {
       name,
       short_code: $('f-code').value.trim() || null,
       full_name: $('f-fullname').value.trim() || null,
@@ -2222,59 +1154,441 @@ button { cursor: pointer; border: none; background: none; color: inherit; }
       contact_phone: $('f-phone').value.trim() || null,
       description: $('f-desc').value.trim() || null,
       is_accessible: $('f-accessible').classList.contains('on'),
-      height_m: $('f-height') ? Number($('f-height').value) || 12 : 12,
-      floors: $('f-floors') ? Number($('f-floors').value) || null : null,
+      updated_at: new Date().toISOString(),
+    };
+    if ($('f-height')) update.height_m = Number($('f-height').value) || 12;
+    if ($('f-floors')) update.floors = Number($('f-floors').value) || null;
+    const { error } = await sb.from('places').update(update).eq('id', item.id);
+    if (error) throw error;
+    closeModal(); toast('Updated ✓');
+    await loadAllData();
+  });
+}
+
+// ============================================================
+// TRACK
+// ============================================================
+function renderTrackView() {
+  $('sheet-body').innerHTML = `
+    <div class="track-hero">
+      <div class="distance" id="track-dist">${fmtDist(state.totalDistance)}</div>
+      <div class="distance-label">Distance walked</div>
+    </div>
+    <div class="accuracy-pill">
+      <div class="accuracy-dot bad" id="track-acc-dot"></div>
+      <span>GPS accuracy: <b id="track-acc-text">${state.watchId ? 'Waiting…' : 'Not started'}</b></span>
+    </div>
+    <div class="track-metrics">
+      <div class="metric-card"><div class="value" id="track-time">0:00</div><div class="label">Time</div></div>
+      <div class="metric-card"><div class="value" id="track-points">${state.trackPoints.length}</div><div class="label">Points</div></div>
+      <div class="metric-card"><div class="value" id="track-speed">0.0</div><div class="label">km/h</div></div>
+    </div>
+    <button class="btn-record ${state.isRecording ? 'recording' : ''}" id="btn-record" ${state.isRecording ? 'disabled' : ''}>
+      <i class="fa-solid fa-${state.isRecording ? 'circle-stop' : 'circle'}"></i>
+      ${state.isRecording ? 'Recording…' : 'Start Recording'}
+    </button>
+    <div class="track-controls">
+      <button class="btn-secondary" id="btn-pause" ${!state.isRecording ? 'disabled' : ''}>
+        <i class="fa-solid fa-${state.isPaused ? 'play' : 'pause'}"></i> ${state.isPaused ? 'Resume' : 'Pause'}
+      </button>
+      <button class="btn-secondary" id="btn-stop" ${!state.isRecording ? 'disabled' : ''}>
+        <i class="fa-solid fa-stop"></i> Stop &amp; Save
+      </button>
+    </div>
+    ${state.trackPoints.length > 0 && !state.isRecording ? `<button class="btn-danger-outline" id="btn-discard"><i class="fa-solid fa-trash"></i> Discard Track</button>` : ''}
+    <div style="margin-top:20px;padding:14px;background:var(--surface-2);border-radius:10px;font-size:12px;color:var(--text-muted);line-height:1.6;">
+      <b style="color:var(--text);">📌 How it works:</b> Walk along the path with your phone. Points auto-filtered (accuracy &lt;30m, ≥2m apart). Blue line shows your track live.
+    </div>
+  `;
+  bindTrackControls();
+}
+
+function bindTrackControls() {
+  const rec = $('btn-record'); if (rec && !state.isRecording) rec.onclick = startRecording;
+  const pause = $('btn-pause'); if (pause) pause.onclick = state.isPaused ? resumeRecording : pauseRecording;
+  const stop = $('btn-stop'); if (stop) stop.onclick = stopRecording;
+  const disc = $('btn-discard'); if (disc) disc.onclick = () => { if (confirm('Discard track?')) { clearTrack(); renderTrackView(); } };
+}
+
+function startRecording() {
+  if (!navigator.geolocation) { toast('GPS not available', true); return; }
+  state.isRecording = true; state.isPaused = false;
+  state.trackPoints = []; state.totalDistance = 0;
+  state.trackStartTime = Date.now(); state.trackPausedAt = null;
+  state.totalPausedMs = 0; state.lastAcceptedPoint = null;
+  state.watchId = navigator.geolocation.watchPosition(
+    onPositionUpdate, onPositionError,
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+  );
+  renderTrackView(); toast('Recording started');
+  if (!isDesktop()) closeSheet();
+}
+
+function onPositionUpdate(pos) {
+  const { latitude, longitude, accuracy, speed } = pos.coords;
+  const dot = $('track-acc-dot'); const txt = $('track-acc-text');
+  if (txt) txt.textContent = accuracy ? Math.round(accuracy) + ' m' : '—';
+  if (dot) dot.className = 'accuracy-dot ' + (accuracy <= 10 ? 'good' : accuracy <= 25 ? 'ok' : 'bad');
+  updateCurrentPos(longitude, latitude, accuracy);
+  if (!state.isRecording || state.isPaused) return;
+  if (accuracy && accuracy > 30) return;
+  if (state.lastAcceptedPoint) {
+    const d = turf.distance(turf.point([state.lastAcceptedPoint.lng, state.lastAcceptedPoint.lat]),
+      turf.point([longitude, latitude]), { units: 'meters' });
+    if (d < 2) return;
+    state.totalDistance += d;
+  }
+  const p = { lng: longitude, lat: latitude, accuracy, timestamp: pos.timestamp };
+  state.trackPoints.push(p); state.lastAcceptedPoint = p;
+  updateTrackLine(); updateTrackStats(speed);
+}
+
+function onPositionError(err) { console.warn(err); toast('GPS: ' + (err.message || 'error'), true); }
+
+function updateCurrentPos(lng, lat, accuracy) {
+  if (!state.currentPosMarker) {
+    const el = document.createElement('div');
+    el.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 12px rgba(59,130,246,0.8);';
+    state.currentPosMarker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(state.map);
+  } else state.currentPosMarker.setLngLat([lng, lat]);
+  if (state.map.getSource('accuracy-src') && accuracy) {
+    state.map.getSource('accuracy-src').setData(turf.circle([lng, lat], accuracy / 1000, { steps: 32, units: 'kilometers' }));
+  }
+}
+
+function updateTrackLine() {
+  if (!state.map.getSource('track-src')) return;
+  state.map.getSource('track-src').setData({
+    type: 'Feature', geometry: { type: 'LineString', coordinates: state.trackPoints.map(p => [p.lng, p.lat]) },
+  });
+}
+
+function updateTrackStats(speed) {
+  const d = $('track-dist'); if (d) d.textContent = fmtDist(state.totalDistance);
+  const p = $('track-points'); if (p) p.textContent = state.trackPoints.length;
+  const s = $('track-speed'); if (s) s.textContent = speed ? (speed * 3.6).toFixed(1) : '0.0';
+  const t = $('track-time');
+  if (t && state.trackStartTime) {
+    let elapsed = Date.now() - state.trackStartTime - state.totalPausedMs;
+    if (state.isPaused && state.trackPausedAt) elapsed -= (Date.now() - state.trackPausedAt);
+    const m = Math.floor(elapsed / 60000);
+    const sec = Math.floor((elapsed % 60000) / 1000);
+    t.textContent = `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+}
+
+function pauseRecording() {
+  if (!state.isRecording || state.isPaused) return;
+  state.isPaused = true; state.trackPausedAt = Date.now(); renderTrackView();
+}
+function resumeRecording() {
+  if (!state.isRecording || !state.isPaused) return;
+  state.isPaused = false;
+  if (state.trackPausedAt) { state.totalPausedMs += Date.now() - state.trackPausedAt; state.trackPausedAt = null; }
+  renderTrackView();
+}
+function stopWatching() {
+  if (state.watchId !== null) { navigator.geolocation.clearWatch(state.watchId); state.watchId = null; }
+}
+function stopRecording() {
+  stopWatching();
+  state.isRecording = false; state.isPaused = false;
+  if (state.trackPoints.length < 2) {
+    toast('Track too short', true); clearTrack(); renderTrackView(); return;
+  }
+  openTrackSaveForm();
+}
+function clearTrack() {
+  state.trackPoints = []; state.totalDistance = 0; state.trackStartTime = null;
+  state.trackPausedAt = null; state.totalPausedMs = 0; state.lastAcceptedPoint = null;
+  if (state.map.getSource('track-src')) {
+    state.map.getSource('track-src').setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: [] } });
+  }
+  if (state.map.getSource('accuracy-src')) {
+    state.map.getSource('accuracy-src').setData({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[]] } });
+  }
+  if (state.currentPosMarker) { state.currentPosMarker.remove(); state.currentPosMarker = null; }
+}
+
+function openTrackSaveForm() {
+  const coords = state.trackPoints.map(p => [p.lng, p.lat]);
+  const simplified = turf.simplify(turf.lineString(coords), { tolerance: 0.00003, highQuality: true });
+  const finalCoords = simplified.geometry.coordinates;
+  const dist = turf.length(simplified, { units: 'meters' });
+  const durationMin = Math.round((Date.now() - state.trackStartTime - state.totalPausedMs) / 60000);
+
+  showModal(`
+    <div class="modal-header">
+      <div class="modal-title">💾 Save Track</div>
+      <button class="modal-close" onclick="window.closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:16px;font-size:13px;line-height:1.7;">
+        📏 <b>${fmtDist(dist)}</b> · ⏱ <b>${durationMin} min</b> · 📍 <b>${finalCoords.length} points</b>
+      </div>
+      <div class="form-field"><label>Name <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="Main Gate → Block 27" autofocus></div>
+      <div class="form-row">
+        <div class="form-field"><label>Type</label>
+          <select id="f-path-type">${CFG.pathTypes.map(t => `<option value="${t.id}">${t.label}</option>`).join('')}</select></div>
+        <div class="form-field"><label>Surface</label>
+          <select id="f-surface"><option value="">Unknown</option>${CFG.surfaces.map(s => `<option value="${s.id}">${s.label}</option>`).join('')}</select></div>
+      </div>
+      <div class="form-field"><label>Notes</label>
+        <textarea id="f-notes" placeholder="Landmarks, etc…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="window.closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-save">Save</button>
+    </div>
+  `, async () => {
+    const name = $('f-name').value.trim();
+    if (!name) { toast('Name required', true); return; }
+    const { error } = await sb.from('paths').insert({
+      name,
+      path_type: $('f-path-type').value,
+      surface: $('f-surface').value || null,
+      geojson: { type: 'LineString', coordinates: finalCoords },
+      notes: $('f-notes').value.trim() || null,
       created_by: state.user.id,
       created_by_email: state.user.email,
+    });
+    if (error) throw error;
+    closeModal(); clearTrack(); toast('Track saved ✓');
+    await loadAllData(); renderTrackView();
+  });
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStatsView() {
+  const total = state.places.length + state.paths.length;
+  const buildings = state.places.filter(p => p.footprint_geojson).length;
+  const places = state.places.length - buildings;
+  const paths = state.paths.length;
+  const complete = state.places.filter(p => p.short_code && p.description && ((p.amenities && p.amenities.length) || (p.photos && p.photos.length))).length;
+  const pct = state.places.length ? Math.round((complete / state.places.length) * 100) : 0;
+  const catCounts = {};
+  CFG.categories.forEach(c => catCounts[c.id] = 0);
+  state.places.forEach(p => { if (catCounts[p.category] !== undefined) catCounts[p.category]++; });
+  const maxCat = Math.max(...Object.values(catCounts), 1);
+  const contributors = {};
+  [...state.places, ...state.paths].forEach(x => {
+    const e = x.created_by_email || 'unknown';
+    contributors[e] = (contributors[e] || 0) + 1;
+  });
+
+  $('sheet-body').innerHTML = `
+    <div class="section-header"><span>Overview</span></div>
+    <div class="stats-hero">
+      <div class="stat-block">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div><div class="value">${total}</div><div class="label">Total items</div></div>
+          <div class="progress-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
+        </div>
+      </div>
+      <div class="stat-block"><div class="value">${buildings}</div><div class="label">Buildings</div></div>
+      <div class="stat-block"><div class="value">${places}</div><div class="label">Places / POIs</div></div>
+      <div class="stat-block"><div class="value">${paths}</div><div class="label">Walkways</div></div>
+    </div>
+    <div class="section-header"><span>By category</span></div>
+    <div class="category-bars">
+      ${CFG.categories.filter(c => catCounts[c.id] > 0).map(c => `
+        <div class="cat-row">
+          <div class="label"><i class="fa-solid ${c.icon}" style="color:${c.color};width:14px;"></i> ${c.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(catCounts[c.id] / maxCat) * 100}%;background:${c.color};"></div></div>
+          <div class="count">${catCounts[c.id]}</div>
+        </div>`).join('') || '<div style="font-size:13px;color:var(--text-dim);text-align:center;padding:20px;">No data yet</div>'}
+    </div>
+    <div class="section-header"><span>Contributors</span></div>
+    <div class="items-grid">
+      ${Object.entries(contributors).map(([email, count]) => `
+        <div class="item-card" style="cursor:default;">
+          <div class="item-thumb" style="background:var(--surface-3);color:var(--text);font-weight:800;font-size:14px;">${email.charAt(0).toUpperCase()}</div>
+          <div class="item-main">
+            <div class="item-title">${esc(email)}</div>
+            <div class="item-sub">${count} item${count > 1 ? 's' : ''}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="section-header"><span>Export</span></div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button class="btn-secondary" id="btn-export-json" style="flex:1;"><i class="fa-solid fa-code"></i> JSON</button>
+      <button class="btn-secondary" id="btn-export-geojson" style="flex:1;"><i class="fa-solid fa-map"></i> GeoJSON</button>
+    </div>
+  `;
+  $('btn-export-json').onclick = exportJSON;
+  $('btn-export-geojson').onclick = exportGeoJSON;
+}
+
+function downloadFile(name, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url); toast('Downloaded ' + name);
+}
+function exportJSON() {
+  downloadFile('lpu-data-' + new Date().toISOString().slice(0, 10) + '.json', {
+    places: state.places, paths: state.paths,
+  });
+}
+function exportGeoJSON() {
+  const features = [
+    ...state.places.map(p => ({
+      type: 'Feature',
+      properties: { kind: 'place', id: p.id, name: p.name, short_code: p.short_code,
+        full_name: p.full_name, category: p.category, floors: p.floors, amenities: p.amenities,
+        hours: p.opening_hours, phone: p.contact_phone, is_accessible: p.is_accessible, description: p.description },
+      geometry: p.footprint_geojson || { type: 'Point', coordinates: [p.lng, p.lat] },
+    })),
+    ...state.paths.map(p => ({
+      type: 'Feature',
+      properties: { kind: 'path', id: p.id, name: p.name, path_type: p.path_type,
+        surface: p.surface, width_m: p.width_m, is_lit: p.is_lit,
+        is_accessible: p.is_accessible, has_steps: p.has_steps },
+      geometry: p.geojson,
+    })),
+  ];
+  downloadFile('lpu-campus-' + new Date().toISOString().slice(0, 10) + '.geojson', {
+    type: 'FeatureCollection', features,
+  });
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function showModal(html, onSave) {
+  $('modal').innerHTML = html;
+  $('modal').classList.remove('hidden');
+  $('modal-backdrop').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  bindToggles(); bindAmenityChips();
+  if (onSave) {
+    const btn = $('modal-save');
+    if (btn) btn.onclick = async () => {
+      btn.disabled = true;
+      const orig = btn.textContent; btn.textContent = 'Saving…';
+      try { await onSave(); }
+      catch(err) { console.error(err); toast('Error: ' + (err.message || err), true); btn.disabled = false; btn.textContent = orig; }
     };
   }
+}
+function closeModal() {
+  $('modal').classList.add('hidden');
+  $('modal-backdrop').classList.add('hidden');
+  $('modal').innerHTML = '';
+  document.body.style.overflow = '';
+}
+window.closeModal = closeModal;
+$('modal-backdrop').addEventListener('click', closeModal);
 
-  function bindToggles() {
-    document.querySelectorAll('.toggle').forEach(t => {
-      if (t.dataset.bound) return;
-      t.dataset.bound = '1';
-      t.addEventListener('click', () => t.classList.toggle('on'));
-    });
-  }
+// ============================================================
+// FORM HELPERS
+// ============================================================
+function placeFormFields({ lat, lng, isBuilding }) {
+  const catOpts = CFG.categories.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  const amenityChips = CFG.amenities.map(a =>
+    `<button type="button" class="chip-toggle" data-amenity="${a.id}">${a.label}</button>`).join('');
+  return `
+    <div class="form-field"><label>Name <span class="req">*</span></label>
+      <input type="text" id="f-name" placeholder="${isBuilding ? 'Block 27' : 'Block 27 Main Entrance'}" autofocus></div>
+    <div class="form-row">
+      <div class="form-field"><label>Short code</label>
+        <input type="text" id="f-code" placeholder="27"></div>
+      <div class="form-field"><label>Category</label>
+        <select id="f-category">${catOpts}</select></div>
+    </div>
+    <div class="form-field"><label>Full name</label>
+      <input type="text" id="f-fullname" placeholder="Block 27 — CSE Department"></div>
+    ${isBuilding ? `
+      <div class="form-row">
+        <div class="form-field"><label>Height (m)</label>
+          <input type="number" id="f-height" value="12" min="1" max="200"></div>
+        <div class="form-field"><label>Floors</label>
+          <input type="number" id="f-floors" min="1" max="50" placeholder="3"></div>
+      </div>` : ''}
+    <div class="form-field"><label>Amenities</label>
+      <div class="chip-group" id="amenity-group">${amenityChips}</div></div>
+    <div class="form-row">
+      <div class="form-field"><label>Opening hours</label>
+        <input type="text" id="f-hours" placeholder="8AM–8PM"></div>
+      <div class="form-field"><label>Contact phone</label>
+        <input type="tel" id="f-phone" placeholder="+91..."></div>
+    </div>
+    <div class="form-field"><label>Description</label>
+      <textarea id="f-desc" placeholder="Details…"></textarea></div>
+    <div style="background:var(--surface-2);padding:14px;border-radius:12px;">
+      <div class="toggle-row"><span style="font-size:14px;">♿ Wheelchair accessible</span>
+        <div class="toggle on" id="f-accessible"></div></div>
+    </div>
+    <div style="margin-top:14px;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;color:var(--text-muted);text-align:center;">
+      📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}
+    </div>
+  `;
+}
 
-  function bindAmenityChips() {
-    document.querySelectorAll('#amenity-group .chip-toggle').forEach(chip => {
-      if (chip.dataset.bound) return;
-      chip.dataset.bound = '1';
-      chip.addEventListener('click', () => chip.classList.toggle('selected'));
-    });
-  }
+function collectPlaceData() {
+  const name = $('f-name').value.trim();
+  if (!name) { toast('Name required', true); return null; }
+  const amenities = Array.from(document.querySelectorAll('#amenity-group .chip-toggle.selected')).map(b => b.dataset.amenity);
+  return {
+    name,
+    short_code: $('f-code').value.trim() || null,
+    full_name: $('f-fullname').value.trim() || null,
+    category: $('f-category').value,
+    amenities,
+    opening_hours: $('f-hours').value.trim() || null,
+    contact_phone: $('f-phone').value.trim() || null,
+    description: $('f-desc').value.trim() || null,
+    is_accessible: $('f-accessible').classList.contains('on'),
+    height_m: $('f-height') ? Number($('f-height').value) || 12 : 12,
+    floors: $('f-floors') ? Number($('f-floors').value) || null : null,
+    created_by: state.user.id,
+    created_by_email: state.user.email,
+  };
+}
 
-  // ============================================================
-  // FAB WIRING
-  // ============================================================
-  $('fab-add').addEventListener('click', openAddMenu);
-
-  $('fab-locate').addEventListener('click', () => {
-    if (!navigator.geolocation) { toast('No GPS', true); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        state.map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 18, pitch: 55 });
-        toast('Located');
-      },
-      () => toast('GPS denied', true),
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+function bindToggles() {
+  document.querySelectorAll('.toggle').forEach(t => {
+    if (t.dataset.bound) return;
+    t.dataset.bound = '1';
+    t.addEventListener('click', () => t.classList.toggle('on'));
   });
-
-  $('fab-3d').addEventListener('click', e => {
-    state.is3D = !state.is3D;
-    e.currentTarget.classList.toggle('active', state.is3D);
-    state.map.easeTo({ pitch: state.is3D ? 50 : 0, bearing: state.is3D ? -15 : 0, duration: 800 });
-    if (state.map.getLayer('footprints-3d')) {
-      state.map.setLayoutProperty('footprints-3d', 'visibility', state.is3D ? 'visible' : 'none');
-    }
+}
+function bindAmenityChips() {
+  document.querySelectorAll('#amenity-group .chip-toggle').forEach(chip => {
+    if (chip.dataset.bound) return;
+    chip.dataset.bound = '1';
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
   });
+}
 
-  // ============================================================
-  // INIT
-  // ============================================================
-  checkSession();
+// ============================================================
+// FABs
+// ============================================================
+$('fab-add').addEventListener('click', openAddMenu);
+$('fab-locate').addEventListener('click', () => {
+  if (!navigator.geolocation) { toast('No GPS', true); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => { state.map.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 18, pitch: 55 }); toast('Located'); },
+    () => toast('GPS denied', true),
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+});
+$('fab-3d').addEventListener('click', e => {
+  state.is3D = !state.is3D;
+  e.currentTarget.classList.toggle('active', state.is3D);
+  state.map.easeTo({ pitch: state.is3D ? 50 : 0, bearing: state.is3D ? -15 : 0, duration: 800 });
+  if (state.map.getLayer('footprints-3d')) {
+    state.map.setLayoutProperty('footprints-3d', 'visibility', state.is3D ? 'visible' : 'none');
+  }
+});
+
+// ============================================================
+// INIT
+// ============================================================
+checkSession();
 })();
 </script>
 </body>
